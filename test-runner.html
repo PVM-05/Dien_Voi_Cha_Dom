@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Bảng Điều Khiển Kiểm Thử Tự Động (Test Runner Dashboard)</title>
+  <title>Bảng Điều Khiển Kiểm Thử Tự Động - SQA Suite</title>
   <style>
     :root {
       --bg: #f8fafc;
@@ -19,32 +19,42 @@
       --danger: #dc2626;
       --danger-bg: #fee2e2;
       --danger-text: #b91c1c;
-      --warning: #d97706;
-      --warning-bg: #fef3c7;
       --tag-bg: #f1f5f9;
+      --code-bg: #0f172a;
+      --code-text: #e2e8f0;
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #0f172a;
-        --card: #1e293b;
+        --bg: #0b1120;
+        --card: #151e32;
         --text: #f8fafc;
         --muted: #94a3b8;
-        --border: #334155;
-        --tag-bg: #334155;
+        --border: #222f46;
+        --tag-bg: #1e293b;
+        --success-bg: #052e16;
+        --success-text: #4ade80;
+        --danger-bg: #450a0a;
+        --danger-text: #f87171;
+        --code-bg: #090e1a;
+        --code-text: #f1f5f9;
       }
     }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding: 24px 16px 60px;
+      padding: 28px 16px 64px;
       line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
     .container {
       max-width: 960px;
       margin: 0 auto;
     }
+
+    /* Header */
     header {
       display: flex;
       justify-content: space-between;
@@ -52,19 +62,17 @@
       flex-wrap: wrap;
       gap: 16px;
       margin-bottom: 24px;
-      padding-bottom: 16px;
+      padding-bottom: 18px;
       border-bottom: 1px solid var(--border);
     }
     .header-title h1 {
-      font-size: 1.5rem;
+      font-size: 1.55rem;
       font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      letter-spacing: -0.02em;
     }
     .header-title p {
       color: var(--muted);
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       margin-top: 4px;
     }
     .nav-actions {
@@ -72,17 +80,18 @@
       gap: 10px;
     }
     .btn {
+      font-family: inherit;
       padding: 8px 16px;
       border-radius: 6px;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: 600;
       cursor: pointer;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
       border: 1px solid transparent;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
     }
     .btn-primary {
       background: var(--primary);
@@ -98,14 +107,15 @@
     }
     .btn-outline:hover {
       background: var(--tag-bg);
+      border-color: var(--muted);
     }
 
     /* Summary Metrics */
     .metrics-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 14px;
-      margin-bottom: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
     }
     .metric-card {
       background: var(--card);
@@ -114,16 +124,17 @@
       padding: 16px;
     }
     .metric-label {
-      font-size: 0.8rem;
+      font-size: 0.76rem;
       color: var(--muted);
       text-transform: uppercase;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: 0.5px;
     }
     .metric-val {
       font-size: 1.8rem;
       font-weight: 700;
       margin-top: 4px;
+      letter-spacing: -0.02em;
     }
     .metric-val.pass { color: var(--success); }
     .metric-val.fail { color: var(--danger); }
@@ -143,9 +154,9 @@
       margin-bottom: 8px;
     }
     .progress-bar {
-      height: 10px;
+      height: 8px;
       background: var(--border);
-      border-radius: 5px;
+      border-radius: 4px;
       overflow: hidden;
       display: flex;
     }
@@ -173,19 +184,25 @@
       flex-wrap: wrap;
     }
     .filter-btn {
-      padding: 6px 12px;
+      font-family: inherit;
+      padding: 6px 14px;
       font-size: 0.82rem;
-      border-radius: 20px;
+      border-radius: 6px;
       border: 1px solid var(--border);
       background: var(--card);
       color: var(--muted);
       cursor: pointer;
-      font-weight: 500;
+      font-weight: 600;
+      transition: all 0.15s ease;
+    }
+    .filter-btn:hover {
+      color: var(--text);
+      border-color: var(--muted);
     }
     .filter-btn.active {
-      background: var(--text);
-      color: var(--bg);
-      border-color: var(--text);
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
     }
 
     /* Test Case List */
@@ -201,6 +218,9 @@
       padding: 14px 16px;
       transition: border-color 0.2s;
     }
+    .test-card:hover {
+      border-color: var(--muted);
+    }
     .test-header {
       display: flex;
       align-items: center;
@@ -215,31 +235,36 @@
       flex-wrap: wrap;
     }
     .test-id {
-      font-family: monospace;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       background: var(--tag-bg);
-      padding: 2px 6px;
+      color: var(--text);
+      padding: 2px 7px;
       border-radius: 4px;
+      border: 1px solid var(--border);
     }
     .test-name {
       font-weight: 600;
-      font-size: 0.95rem;
+      font-size: 0.94rem;
     }
     .badge {
-      padding: 4px 8px;
+      padding: 3px 8px;
       border-radius: 4px;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 700;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
     }
     .badge-pass {
       background: var(--success-bg);
       color: var(--success-text);
+      border: 1px solid rgba(22, 163, 74, 0.2);
     }
     .badge-fail {
       background: var(--danger-bg);
       color: var(--danger-text);
+      border: 1px solid rgba(220, 38, 38, 0.2);
     }
     .test-desc {
       font-size: 0.85rem;
@@ -258,9 +283,10 @@
     }
     .code-box {
       background: var(--tag-bg);
+      border: 1px solid var(--border);
       padding: 8px 12px;
       border-radius: 6px;
-      font-family: monospace;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 0.82rem;
       margin-top: 6px;
       overflow-x: auto;
@@ -270,7 +296,8 @@
       color: var(--muted);
       background: var(--tag-bg);
       padding: 2px 8px;
-      border-radius: 12px;
+      border-radius: 4px;
+      font-weight: 500;
     }
   </style>
 </head>
@@ -278,12 +305,12 @@
 <div class="container">
   <header>
     <div class="header-title">
-      <h1>🧪 Bảng Điều Khiển Kiểm Thử Tự Động</h1>
-      <p>Báo cáo kiểm định & đánh giá chất lượng phần mềm tính tiền điện (SQA Suite)</p>
+      <h1>Bảng Điều Khiển Kiểm Thử Tự Động</h1>
+      <p>Báo cáo kiểm định và đánh giá chất lượng phần mềm tính tiền điện (SQA Suite)</p>
     </div>
     <div class="nav-actions">
-      <a href="index.html" class="btn btn-outline">🏠 Về Trang Tính Tiền</a>
-      <button id="btnRunTests" class="btn btn-primary">▶ Chạy Lại Kiểm Thử</button>
+      <a href="index.html" class="btn btn-outline">Về Trang Tính Tiền</a>
+      <button id="btnRunTests" class="btn btn-primary">Chạy Lại Kiểm Thử</button>
     </div>
   </header>
 
@@ -333,7 +360,7 @@
       <button class="filter-btn" data-filter="ROBUST">Bảo mật & Chịu lỗi (<span id="countRobust">0</span>)</button>
     </div>
     <div>
-      <button id="btnToggleAll" class="btn btn-outline" style="font-size: 0.8rem; padding: 4px 10px;">Mở / Đóng chi tiết</button>
+      <button id="btnToggleAll" class="btn btn-outline" style="font-size: 0.8rem; padding: 6px 12px;">Mở / Đóng chi tiết</button>
     </div>
   </div>
 
@@ -363,7 +390,7 @@
     const failPct = (report.failed / report.total) * 100;
     document.getElementById('barPass').style.width = `${passPct}%`;
     document.getElementById('barFail').style.width = `${failPct}%`;
-    document.getElementById('progressText').textContent = `${report.passRate}% PASS`;
+    document.getElementById('progressText').textContent = `${report.passRate}% PASSED`;
 
     // Counts
     document.getElementById('countAll').textContent = report.total;
@@ -396,12 +423,12 @@
           <div class="test-title-area">
             <span class="test-id">${tc.id}</span>
             <span class="test-name">${tc.name}</span>
-            <span class="category-tag">${tc.category.split('(')[0]}</span>
+            <span class="category-tag">${tc.category.split('(')[0].trim()}</span>
           </div>
           <div style="display:flex; align-items:center; gap:8px;">
             <span style="font-size:0.75rem; color:var(--muted);">${tc.duration}ms</span>
             <span class="badge ${tc.passed ? 'badge-pass' : 'badge-fail'}">
-              ${tc.passed ? '✓ PASSED' : '✗ FAILED'}
+              ${tc.passed ? 'PASSED' : 'FAILED'}
             </span>
           </div>
         </div>

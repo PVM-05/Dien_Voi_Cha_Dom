@@ -1,4 +1,4 @@
-# ⚡ Hệ Thống Tính Tiền Điện Sinh Hoạt & Kiểm Định Chất Lượng Phần Mềm (SQA)
+# Hệ Thống Tính Tiền Điện Sinh Hoạt & Kiểm Định Chất Lượng Phần Mềm (SQA)
 
 > Dự án Web tính tiền điện bậc thang theo quy định EVN kết hợp bộ công cụ kiểm thử tự động, phục vụ môn học **Kiểm định và đánh giá chất lượng phần mềm (Software Testing & QA)**.
 
@@ -9,7 +9,7 @@
 
 ---
 
-## 🌟 Điểm nổi bật của dự án
+## Điểm nổi bật của dự án
 
 1. **Kiến trúc phân tách chuẩn SQA**:
    - `js/calculator.js`: Xử lý toàn bộ logic nghiệp vụ tính toán (Pure Functions), dễ dàng kiểm thử đơn vị độc lập.
@@ -25,7 +25,7 @@
 
 ---
 
-## 📁 Cấu trúc thư mục
+## Cấu trúc thư mục
 
 ```text
 ├── index.html                 # Giao diện chính tính tiền điện sinh hoạt
@@ -40,7 +40,7 @@
 
 ---
 
-## 🚀 Hướng dẫn sử dụng
+## Hướng dẫn sử dụng
 
 ### 1. Mở ứng dụng tính tiền điện
 
@@ -48,7 +48,7 @@ Mở file `index.html` trực tiếp bằng trình duyệt web bất kỳ (Chrom
 
 - Nhập **Chỉ số cũ** và **Chỉ số mới**.
 - Chọn mức **Thuế VAT** (8%, 10% hoặc 0%).
-- Nhấn **⚡ Tính Tiền Điện** để xem chi tiết tiền từng bậc thang.
+- Nhấn **Tính Tiền Điện** để xem chi tiết tiền từng bậc thang.
 - Có thể nhấn các nút **Dữ liệu mẫu kiểm thử nhanh** để xem ngay kết quả.
 
 ### 2. Mở Bảng điều khiển kiểm thử tự động

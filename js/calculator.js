@@ -110,7 +110,7 @@ export function calculateTierDetails(kwh, tiers = DEFAULT_TIERS) {
     tierBreakdown.push({
       tier: tier.tier,
       name: tier.name,
-      range: tier.to === Infinity ? `Trên ${t.from}` : `${tier.from + 1} - ${tier.to}`,
+      range: tier.to === Infinity ? `Trên ${tier.from}` : `${tier.from + 1} - ${tier.to}`,
       used: used,
       price: tier.price,
       amount: amount

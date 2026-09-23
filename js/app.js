@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const result = calculateElectricityBill(oldVal, newVal, vatRate);
 
     if (!result.success) {
-      showError(`⚠️ ${result.error}`);
+      showError(result.error);
       resultCard.style.display = 'none';
       return;
     }
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     navigator.clipboard.writeText(text).then(() => {
       const origText = copyBtn.textContent;
-      copyBtn.textContent = '✓ Đã sao chép!';
+      copyBtn.textContent = 'Đã sao chép!';
       setTimeout(() => copyBtn.textContent = origText, 2000);
     }).catch(() => {
       alert('Không thể sao chép văn bản.');
