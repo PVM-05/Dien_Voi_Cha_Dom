@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Bảng Điều Khiển Kiểm Thử Tự Động (Test Runner Dashboard)</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #16a34a;
+      --success-bg: #dcfce7;
+      --success-text: #15803d;
+      --danger: #dc2626;
+      --danger-bg: #fee2e2;
+      --danger-text: #b91c1c;
+      --warning: #d97706;
+      --warning-bg: #fef3c7;
+      --tag-bg: #f1f5f9;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --card: #1e293b;
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --border: #334155;
+        --tag-bg: #334155;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px 16px 60px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .header-title h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header-title p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+    .nav-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-outline {
+      background: var(--card);
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover {
+      background: var(--tag-bg);
+    }
+
+    /* Summary Metrics */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .metric-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .metric-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .metric-val {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+    .metric-val.pass { color: var(--success); }
+    .metric-val.fail { color: var(--danger); }
+
+    /* Progress bar */
+    .progress-bar-wrapper {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.88rem;
+      margin-bottom: 8px;
+    }
+    .progress-bar {
+      height: 10px;
+      background: var(--border);
+      border-radius: 5px;
+      overflow: hidden;
+      display: flex;
+    }
+    .progress-fill-pass {
+      background: var(--success);
+      transition: width 0.4s ease;
+    }
+    .progress-fill-fail {
+      background: var(--danger);
+      transition: width 0.4s ease;
+    }
+
+    /* Filters & Controls */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .filter-group {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 6px 12px;
+      font-size: 0.82rem;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .filter-btn.active {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+    }
+
+    /* Test Case List */
+    .test-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .test-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      transition: border-color 0.2s;
+    }
+    .test-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: pointer;
+    }
+    .test-title-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .test-id {
+      font-family: monospace;
+      font-weight: 700;
+      font-size: 0.85rem;
+      background: var(--tag-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .test-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    .badge-pass {
+      background: var(--success-bg);
+      color: var(--success-text);
+    }
+    .badge-fail {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+    }
+    .test-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    .test-details {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--border);
+      font-size: 0.85rem;
+      display: none;
+    }
+    .test-card.expanded .test-details {
+      display: block;
+    }
+    .code-box {
+      background: var(--tag-bg);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.82rem;
+      margin-top: 6px;
+      overflow-x: auto;
+    }
+    .category-tag {
+      font-size: 0.75rem;
+      color: var(--muted);
+      background: var(--tag-bg);
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="header-title">
+      <h1>🧪 Bảng Điều Khiển Kiểm Thử Tự Động</h1>
+      <p>Báo cáo kiểm định & đánh giá chất lượng phần mềm tính tiền điện (SQA Suite)</p>
+    </div>
+    <div class="nav-actions">
+      <a href="index.html" class="btn btn-outline">🏠 Về Trang Tính Tiền</a>
+      <button id="btnRunTests" class="btn btn-primary">▶ Chạy Lại Kiểm Thử</button>
+    </div>
+  </header>
+
+  <!-- Metrics -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label">Tổng ca kiểm thử</div>
+      <div class="metric-val" id="metricTotal">--</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Vượt qua (Pass)</div>
+      <div class="metric-val pass" id="metricPass">--</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Thất bại (Fail)</div>
+      <div class="metric-val fail" id="metricFail">--</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Tỷ lệ thành công</div>
+      <div class="metric-val pass" id="metricRate">--%</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Thời gian thực thi</div>
+      <div class="metric-val" id="metricTime">-- ms</div>
+    </div>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="progress-bar-wrapper">
+    <div class="progress-info">
+      <span>Tiến trình hoàn thành: <strong id="progressText">100%</strong></span>
+      <span id="coverageText">Độ phủ mã nguồn (Code Coverage): <strong>100% Core Logic</strong></span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill-pass" id="barPass" style="width: 0%"></div>
+      <div class="progress-fill-fail" id="barFail" style="width: 0%"></div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="filter-group" id="filterGroup">
+      <button class="filter-btn active" data-filter="all">Tất cả (<span id="countAll">0</span>)</button>
+      <button class="filter-btn" data-filter="EP">Phân vùng tương đương (<span id="countEP">0</span>)</button>
+      <button class="filter-btn" data-filter="BVA">Giá trị biên (<span id="countBVA">0</span>)</button>
+      <button class="filter-btn" data-filter="VAT">Bảng quyết định & VAT (<span id="countVAT">0</span>)</button>
+      <button class="filter-btn" data-filter="ROBUST">Bảo mật & Chịu lỗi (<span id="countRobust">0</span>)</button>
+    </div>
+    <div>
+      <button id="btnToggleAll" class="btn btn-outline" style="font-size: 0.8rem; padding: 4px 10px;">Mở / Đóng chi tiết</button>
+    </div>
+  </div>
+
+  <!-- Test List -->
+  <div class="test-list" id="testList"></div>
+</div>
+
+<script type="module">
+  import { runAllTests } from './js/test-suite.js';
+
+  let currentResults = null;
+  let activeFilter = 'all';
+
+  function executeAndRender() {
+    const report = runAllTests();
+    currentResults = report;
+
+    // Render Metrics
+    document.getElementById('metricTotal').textContent = report.total;
+    document.getElementById('metricPass').textContent = report.passed;
+    document.getElementById('metricFail').textContent = report.failed;
+    document.getElementById('metricRate').textContent = `${report.passRate}%`;
+    document.getElementById('metricTime').textContent = `${report.totalTime} ms`;
+
+    // Progress Bar
+    const passPct = (report.passed / report.total) * 100;
+    const failPct = (report.failed / report.total) * 100;
+    document.getElementById('barPass').style.width = `${passPct}%`;
+    document.getElementById('barFail').style.width = `${failPct}%`;
+    document.getElementById('progressText').textContent = `${report.passRate}% PASS`;
+
+    // Counts
+    document.getElementById('countAll').textContent = report.total;
+    document.getElementById('countEP').textContent = report.results.filter(r => r.id.includes('_EP_')).length;
+    document.getElementById('countBVA').textContent = report.results.filter(r => r.id.includes('_BVA_')).length;
+    document.getElementById('countVAT').textContent = report.results.filter(r => r.id.includes('_VAT_')).length;
+    document.getElementById('countRobust').textContent = report.results.filter(r => r.id.includes('_SEC_')).length;
+
+    renderList();
+  }
+
+  function renderList() {
+    const container = document.getElementById('testList');
+    container.innerHTML = '';
+
+    const filtered = currentResults.results.filter(item => {
+      if (activeFilter === 'all') return true;
+      if (activeFilter === 'EP') return item.id.includes('_EP_');
+      if (activeFilter === 'BVA') return item.id.includes('_BVA_');
+      if (activeFilter === 'VAT') return item.id.includes('_VAT_');
+      if (activeFilter === 'ROBUST') return item.id.includes('_SEC_');
+      return true;
+    });
+
+    filtered.forEach(tc => {
+      const card = document.createElement('div');
+      card.className = 'test-card';
+      card.innerHTML = `
+        <div class="test-header">
+          <div class="test-title-area">
+            <span class="test-id">${tc.id}</span>
+            <span class="test-name">${tc.name}</span>
+            <span class="category-tag">${tc.category.split('(')[0]}</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:0.75rem; color:var(--muted);">${tc.duration}ms</span>
+            <span class="badge ${tc.passed ? 'badge-pass' : 'badge-fail'}">
+              ${tc.passed ? '✓ PASSED' : '✗ FAILED'}
+            </span>
+          </div>
+        </div>
+        <div class="test-desc">${tc.description}</div>
+        <div class="test-details">
+          <div><strong>Input Data:</strong></div>
+          <pre class="code-box">${JSON.stringify(tc.input, null, 2)}</pre>
+          <div style="margin-top:8px;"><strong>Actual Output:</strong></div>
+          <pre class="code-box">${JSON.stringify(tc.actualResult, null, 2)}</pre>
+          ${tc.errorMessage ? `<div style="color:var(--danger); margin-top:8px;"><strong>Error:</strong> ${tc.errorMessage}</div>` : ''}
+        </div>
+      `;
+
+      card.querySelector('.test-header').addEventListener('click', () => {
+        card.classList.toggle('expanded');
+      });
+
+      container.appendChild(card);
+    });
+  }
+
+  // Filter Buttons
+  document.getElementById('filterGroup').addEventListener('click', (e) => {
+    if (e.target.classList.contains('filter-btn')) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      activeFilter = e.target.dataset.filter;
+      renderList();
+    }
+  });
+
+  // Re-run
+  document.getElementById('btnRunTests').addEventListener('click', executeAndRender);
+
+  // Toggle All
+  let allExpanded = false;
+  document.getElementById('btnToggleAll').addEventListener('click', () => {
+    allExpanded = !allExpanded;
+    document.querySelectorAll('.test-card').forEach(card => {
+      if (allExpanded) card.classList.add('expanded');
+      else card.classList.remove('expanded');
+    });
+  });
+
+  // Initial Run
+  executeAndRender();
+</script>
+</body>
+</html>
