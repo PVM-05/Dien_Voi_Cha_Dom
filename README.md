@@ -43,48 +43,17 @@
 ## 🚀 Hướng dẫn sử dụng
 
 ### 1. Mở ứng dụng tính tiền điện
+
 Mở file `index.html` trực tiếp bằng trình duyệt web bất kỳ (Chrome, Edge, Firefox, Cốc Cốc) hoặc dùng Live Server trong VS Code:
+
 - Nhập **Chỉ số cũ** và **Chỉ số mới**.
 - Chọn mức **Thuế VAT** (8%, 10% hoặc 0%).
 - Nhấn **⚡ Tính Tiền Điện** để xem chi tiết tiền từng bậc thang.
 - Có thể nhấn các nút **Dữ liệu mẫu kiểm thử nhanh** để xem ngay kết quả.
 
 ### 2. Mở Bảng điều khiển kiểm thử tự động
+
 - Mở file `test-runner.html` bằng trình duyệt web.
 - Hệ thống sẽ tự động thực thi toàn bộ **25 ca kiểm thử** và hiển thị tỷ lệ thành công (100% PASS), thời gian thực thi và chi tiết Input/Output từng ca.
 
 ---
-
-## 📤 Hướng dẫn kết nối và Push lên GitHub
-
-Mở cửa sổ dòng lệnh (Terminal / PowerShell / Git Bash) tại thư mục dự án và chạy các lệnh sau:
-
-```bash
-# 1. Khởi tạo Git (nếu chưa khởi tạo)
-git init
-
-# 2. Thêm tất cả các file vào Git
-git add .
-
-# 3. Tạo commit đầu tiên
-git commit -m "feat: cai tien web tinh tien dien voi bo test tu dong va bao cao SQA"
-
-# 4. Đổi tên nhánh chính thành main
-git branch -M main
-
-# 5. Thêm remote repository GitHub (Chọn 1 trong 2 giao thức):
-
-# Cách A (Dùng SSH - nếu bạn đã cấu hình SSH key trên GitHub):
-git remote add origin git@github.com:PVM-05/Dien_Voi_Cha_Dom.git
-
-# Cách B (Dùng HTTPS - nếu bạn dùng mật khẩu / GitHub Personal Access Token):
-# git remote add origin https://github.com/PVM-05/Dien_Voi_Cha_Dom.git
-
-# 6. Đẩy mã nguồn lên GitHub
-git push -u origin main
-```
-
-> **Lưu ý**: Nếu remote `origin` đã tồn tại từ trước, bạn có thể cập nhật lại URL bằng lệnh:
-> ```bash
-> git remote set-url origin git@github.com:PVM-05/Dien_Voi_Cha_Dom.git
-> ```
