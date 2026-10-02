@@ -1,0 +1,12 @@
+{
+  "name": "electricity-bill-sqa",
+  "version": "1.0.0",
+  "description": "Hệ thống tính tiền điện sinh hoạt bậc thang và kiểm định chất lượng phần mềm",
+  "type": "module",
+  "scripts": {
+    "test": "node run-tests.js"
+  },
+  "keywords": ["sqa", "testing", "electricity-calculator"],
+  "author": "PVM-05",
+  "license": "MIT"
+}
