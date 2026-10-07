@@ -1,0 +1,36 @@
+// Cấu hình hệ thống biểu giá và tùy chọn ứng dụng (EVN Config)
+
+/**
+ * Biểu giá bán lẻ điện sinh hoạt bậc thang theo Quyết định số 2941/QĐ-BCT
+ * Đơn vị: VNĐ/kWh (chưa bao gồm thuế GTGT)
+ */
+export const DEFAULT_TIERS = [
+  { tier: 1, name: 'Bậc 1', from: 0,   to: 50,       price: 1984, desc: 'Cho kWh từ 0 - 50' },
+  { tier: 2, name: 'Bậc 2', from: 50,  to: 100,      price: 2050, desc: 'Cho kWh từ 51 - 100' },
+  { tier: 3, name: 'Bậc 3', from: 100, to: 200,      price: 2380, desc: 'Cho kWh từ 101 - 200' },
+  { tier: 4, name: 'Bậc 4', from: 200, to: 300,      price: 2998, desc: 'Cho kWh từ 201 - 300' },
+  { tier: 5, name: 'Bậc 5', from: 300, to: 400,      price: 3350, desc: 'Cho kWh từ 301 - 400' },
+  { tier: 6, name: 'Bậc 6', from: 400, to: Infinity,  price: 3460, desc: 'Cho kWh từ 401 trở lên' }
+];
+
+/**
+ * Các mức thuế suất GTGT (VAT) áp dụng
+ */
+export const VAT_OPTIONS = [
+  { rate: 0.08, label: '8% (Mức kích cầu hiện hành)', isDefault: true },
+  { rate: 0.10, label: '10% (Thuế suất chuẩn)' },
+  { rate: 0.00, label: '0% (Miễn thuế GTGT)' }
+];
+
+/**
+ * Cấu hình lưu trữ và giới hạn
+ */
+export const STORAGE_KEYS = {
+  HISTORY: 'evn_calc_history_v2',
+  PREFERENCES: 'evn_calc_prefs_v2'
+};
+
+export const APP_LIMITS = {
+  MAX_KWH: 10000000,
+  MAX_HISTORY_ITEMS: 8
+};

@@ -3,129 +3,151 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Tính Tiền Điện Sinh Hoạt - SQA Edition</title>
+  <title>Tính Tiền Điện Sinh Hoạt - Biểu Giá EVN</title>
   <style>
     :root {
       --bg: #f8fafc;
       --card: #ffffff;
+      --card-subtle: #f1f5f9;
       --text: #0f172a;
       --text-muted: #64748b;
-      --accent: #16a34a;
-      --accent-hover: #15803d;
-      --accent-ink: #ffffff;
       --border: #e2e8f0;
-      --border-focus: #3b82f6;
+      --border-focus: #2563eb;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-ink: #ffffff;
+      --accent: #0f766e;
+      --accent-light: #f0fdfa;
+      --accent-border: #99f6e4;
+      --accent-text: #0f766e;
       --danger: #dc2626;
       --danger-bg: #fef2f2;
       --danger-border: #fecaca;
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --tag-bg: #f1f5f9;
-      --table-header-bg: #f8fafc;
-      --table-active-row: #f0fdf4;
+      --success: #16a34a;
+      --success-bg: #f0fdf4;
+      --success-border: #bbf7d0;
+      --warning: #d97706;
+      --tag-bg: #e2e8f0;
+      --table-header: #f8fafc;
+      --table-active: #f0fdf4;
     }
+
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #0b1120;
-        --card: #151e32;
+        --bg: #090e17;
+        --card: #131b2a;
+        --card-subtle: #1a2436;
         --text: #f8fafc;
         --text-muted: #94a3b8;
-        --border: #222f46;
-        --border-focus: #60a5fa;
+        --border: #222f44;
+        --border-focus: #3b82f6;
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --primary-ink: #ffffff;
+        --accent: #14b8a6;
+        --accent-light: #0d2826;
+        --accent-border: #134e4a;
+        --accent-text: #2dd4bf;
         --danger: #ef4444;
         --danger-bg: #2d1217;
         --danger-border: #5c1d24;
+        --success: #22c55e;
+        --success-bg: #052e16;
+        --success-border: #14532d;
+        --warning: #f59e0b;
         --tag-bg: #1e293b;
-        --table-header-bg: #131b2e;
-        --table-active-row: #062b19;
+        --table-header: #0f172a;
+        --table-active: #062b19;
       }
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       background: var(--bg);
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       display: flex;
       justify-content: center;
-      padding: 28px 16px 64px;
+      padding: 32px 16px 80px;
       line-height: 1.5;
       -webkit-font-smoothing: antialiased;
     }
+
     main {
       width: 100%;
-      max-width: 640px;
+      max-width: 620px;
     }
 
-    /* Top Navigation Bar */
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    /* Top Brand & Title */
+    .app-header {
       margin-bottom: 24px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--border);
+      text-align: center;
     }
-    .brand-mark {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .brand-tag {
+    .brand-pill {
+      display: inline-block;
       font-size: 0.72rem;
       font-weight: 700;
       letter-spacing: 0.8px;
       text-transform: uppercase;
-      padding: 3px 8px;
-      border-radius: 4px;
-      background: var(--primary);
-      color: #ffffff;
-    }
-    .brand-text {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .nav-btn {
-      color: var(--primary);
-      text-decoration: none;
-      font-size: 0.86rem;
-      font-weight: 600;
-      padding: 6px 14px;
-      border: 1px solid var(--border);
-      background: var(--card);
-      border-radius: 6px;
-      transition: all 0.2s ease;
-    }
-    .nav-btn:hover {
+      padding: 3px 10px;
+      border-radius: 20px;
       background: var(--tag-bg);
-      border-color: var(--primary);
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 0.94rem;
     }
 
-    /* Page Header */
-    h1 {
-      font-size: 1.65rem;
-      letter-spacing: -0.02em;
-      margin: 0 0 6px;
-      font-weight: 700;
+    /* Mode Switcher Tabs */
+    .tab-nav {
+      display: flex;
+      background: var(--card-subtle);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      margin-bottom: 18px;
+      gap: 4px;
     }
-    p.sub {
+    .tab-btn {
+      flex: 1;
+      padding: 10px 14px;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
       color: var(--text-muted);
-      margin: 0 0 20px;
-      font-size: 0.92rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+    .tab-btn.active {
+      background: var(--card);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     /* Cards */
     .card {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 22px;
-      margin-bottom: 16px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+      margin-bottom: 18px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
 
-    /* Form Layout */
+    /* Form Fields */
     .form-group {
       margin-bottom: 14px;
     }
@@ -148,12 +170,13 @@
     }
     input, select {
       width: 100%;
-      padding: 10px 12px;
+      padding: 11px 14px;
       border-radius: 8px;
       border: 1px solid var(--border);
       background: var(--bg);
       color: var(--text);
-      font-size: 0.98rem;
+      font-family: inherit;
+      font-size: 1rem;
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
@@ -161,22 +184,51 @@
       border-color: var(--border-focus);
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
     }
+    .form-help {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
 
-    /* Error Message Box (No Icons) */
-    .error-box {
+    /* Smart Input Feedback Hint (No Icons) */
+    .input-hint {
+      font-size: 0.86rem;
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      transition: all 0.2s ease;
+      display: block;
+      font-weight: 500;
+    }
+    .hint-neutral {
+      background: var(--card-subtle);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+    .hint-error {
       background: var(--danger-bg);
       color: var(--danger);
       border: 1px solid var(--danger-border);
       border-left: 4px solid var(--danger);
-      font-size: 0.88rem;
-      font-weight: 500;
-      padding: 10px 14px;
-      border-radius: 6px;
-      margin-bottom: 14px;
-      display: none;
+    }
+    .hint-success {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid var(--success-border);
+      border-left: 4px solid var(--success);
     }
 
-    /* Primary Actions */
+    /* Comparison Status */
+    .comparison-text {
+      font-size: 0.82rem;
+      margin-top: 6px;
+      font-weight: 600;
+    }
+    .text-success { color: var(--success); }
+    .text-warning { color: var(--warning); }
+    .text-neutral { color: var(--text-muted); }
+
+    /* Action Buttons */
     .btn-group {
       display: flex;
       gap: 10px;
@@ -184,21 +236,21 @@
     }
     button {
       font-family: inherit;
-      padding: 11px 16px;
-      border: none;
+      padding: 12px 18px;
       border-radius: 8px;
       font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
+      border: 1px solid transparent;
       transition: all 0.2s ease;
     }
     button.primary {
       flex: 2;
-      background: var(--accent);
-      color: var(--accent-ink);
+      background: var(--primary);
+      color: var(--primary-ink);
     }
     button.primary:hover {
-      background: var(--accent-hover);
+      background: var(--primary-hover);
     }
     button.secondary {
       flex: 1;
@@ -207,125 +259,270 @@
       color: var(--text);
     }
     button.secondary:hover {
-      background: var(--tag-bg);
+      background: var(--card-subtle);
+      border-color: var(--text-muted);
     }
 
-    /* Preset Quick Selection */
-    .presets-wrapper {
-      margin-top: 16px;
-      padding-top: 14px;
-      border-top: 1px dashed var(--border);
+    /* HERO RESULT CARD (Most Prominent Part) */
+    #resultCard {
+      display: none;
+      border-color: var(--accent);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
     }
-    .presets-title {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      font-weight: 700;
-      letter-spacing: 0.4px;
-      margin-bottom: 8px;
-    }
-    .preset-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    .preset-btn {
-      font-size: 0.8rem;
-      padding: 5px 12px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--tag-bg);
-      color: var(--text);
-      cursor: pointer;
-      font-weight: 500;
-      flex: initial;
-    }
-    .preset-btn:hover {
-      border-color: var(--primary);
-      color: var(--primary);
-    }
-
-    /* Results */
-    #resultCard { display: none; }
-    .result-row {
+    .hero-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 0;
-      font-size: 0.95rem;
-      border-bottom: 1px dashed var(--border);
-    }
-    .result-row.total {
-      font-weight: 700;
-      font-size: 1.15rem;
-      color: var(--accent);
-      border-top: 2px solid var(--border);
-      border-bottom: none;
-      margin-top: 10px;
-      padding-top: 14px;
-    }
-
-    /* Results Table */
-    .table-container {
-      margin: 16px 0;
-      overflow-x: auto;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.86rem;
-    }
-    th, td {
-      padding: 9px 12px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
       border-bottom: 1px solid var(--border);
-      text-align: left;
     }
-    th {
-      background: var(--table-header-bg);
-      color: var(--text-muted);
-      font-weight: 600;
+    .hero-label {
       font-size: 0.8rem;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
     }
-    tr:last-child td {
-      border-bottom: none;
+    .hero-kwh-pill {
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: var(--card-subtle);
+      border: 1px solid var(--border);
     }
-    tr.tier-active td {
-      background: var(--table-active-row);
+    .hero-center {
+      text-align: center;
+      padding: 14px 0 18px;
+    }
+    .hero-price {
+      font-size: 2.35rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--accent);
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .hero-subtext {
+      font-size: 0.84rem;
+      color: var(--text-muted);
     }
 
-    /* Result Action Buttons (No Icons) */
-    .action-group {
+    /* Breakdown Rows */
+    .bill-rows {
+      margin: 14px 0;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border);
+    }
+    .bill-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 0;
+      font-size: 0.92rem;
+    }
+    .bill-row.final {
+      font-weight: 700;
+      font-size: 1.05rem;
+      border-top: 1px solid var(--border);
+      margin-top: 6px;
+      padding-top: 10px;
+      color: var(--text);
+    }
+
+    /* Action Group in Result */
+    .result-actions {
       display: flex;
       gap: 10px;
       margin-top: 16px;
     }
-    .action-group button {
+    .result-actions button {
       flex: 1;
-      padding: 9px 14px;
+      padding: 10px 14px;
       font-size: 0.88rem;
     }
 
-    /* Reference Table Accordion (No Icons) */
-    details {
-      margin-top: 16px;
+    /* Progressive Disclosure Accordion */
+    details.breakdown-details {
+      margin-top: 14px;
+      background: var(--card-subtle);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    details summary {
+      cursor: pointer;
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--text);
+      outline: none;
+    }
+    details summary:hover {
+      color: var(--primary);
+    }
+    .table-container {
+      margin-top: 12px;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--card);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+    th, td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    th {
+      background: var(--table-header);
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr.tier-active td { background: var(--table-active); }
+
+    /* Smart Recommendation Card */
+    #savingCard {
+      display: none;
+      background: var(--accent-light);
+      border: 1px solid var(--accent-border);
+    }
+    .card-title-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .card-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--accent-text);
+    }
+    .badge-tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--accent-text);
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+    .saving-advice {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .saving-highlight {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--accent-text);
+      padding: 8px 12px;
+      background: var(--card);
+      border: 1px solid var(--accent-border);
+      border-radius: 6px;
+    }
+
+    /* History Card */
+    .history-card {
+      margin-top: 24px;
+    }
+    .history-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .clear-btn {
+      font-size: 0.8rem;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px 6px;
+      font-weight: 600;
+    }
+    .clear-btn:hover {
+      color: var(--danger);
+    }
+    .history-empty {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 16px 0;
+    }
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background: var(--card-subtle);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.86rem;
+    }
+    .history-date {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+    .history-tag {
+      font-size: 0.72rem;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: var(--tag-bg);
+      font-weight: 600;
+    }
+    .history-kwh {
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+    .history-action-area {
+      text-align: right;
+    }
+    .history-amount {
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 0.95rem;
+      margin-bottom: 2px;
+    }
+    .history-reload-btn {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    .history-reload-btn:hover {
+      border-color: var(--primary);
+    }
+
+    /* Reference Table Accordion (Bottom) */
+    details.ref-accordion {
+      margin-top: 18px;
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 14px 16px;
       font-size: 0.88rem;
-    }
-    summary {
-      cursor: pointer;
-      font-weight: 600;
-      color: var(--text);
-      outline: none;
-    }
-    summary:hover {
-      color: var(--primary);
     }
     .ref-tier-list {
       margin-top: 12px;
@@ -342,115 +539,184 @@
     .ref-tier-item:last-child {
       border-bottom: none;
     }
+    .ref-tier-meta span {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 32px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
 
     @media print {
       body { padding: 0; background: #ffffff; color: #000000; }
-      .top-bar, .presets-wrapper, .btn-group, details, .action-group { display: none !important; }
-      .card { border: 1px solid #cccccc; box-shadow: none; }
+      .app-header .brand-pill, .tab-nav, .btn-group, .history-card, details.ref-accordion, .result-actions, footer {
+        display: none !important;
+      }
+      .card { border: 1px solid #cccccc; box-shadow: none; margin-bottom: 14px; }
+      #resultCard { display: block !important; border: 1px solid #000000; }
     }
   </style>
 </head>
 <body>
 <main>
-  <div class="top-bar">
-    <div class="brand-mark">
-      <span class="brand-tag">SQA</span>
-      <span class="brand-text">Hệ Thống Tính Tiền Điện</span>
-    </div>
-    <a href="test-runner.html" class="nav-btn">Chạy Kiểm Định Tự Động (25+ Tests)</a>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="brand-pill">Biểu Giá EVN Mới Nhất</div>
+    <h1>Tính Tiền Điện Sinh Hoạt</h1>
+    <p class="subtitle">Ước tính nhanh và chuẩn xác tiền điện sinh hoạt theo bậc thang lũy tiến 6 bậc</p>
+  </header>
+
+  <!-- Chuyển đổi phương thức tính -->
+  <div class="tab-nav">
+    <button class="tab-btn active" id="tabMeter">Theo Chỉ Số Công Tơ</button>
+    <button class="tab-btn" id="tabDirect">Ước Tính Theo Số kWh</button>
   </div>
 
-  <h1>Tính Tiền Điện Sinh Hoạt</h1>
-  <p class="sub">Biểu giá bậc thang lũy tiến 6 bậc theo quy định hiện hành và kiểm định chất lượng phần mềm.</p>
-
+  <!-- Form nhập liệu chính -->
   <div class="card">
+    <!-- Panel 1: Tính theo 2 chỉ số công tơ -->
+    <div id="panelMeter">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="oldIdx">Chỉ số cũ (kWh)</label>
+          <input id="oldIdx" type="number" inputmode="numeric" placeholder="Ví dụ: 1250">
+        </div>
+        <div class="form-group">
+          <label for="newIdx">Chỉ số mới (kWh)</label>
+          <input id="newIdx" type="number" inputmode="numeric" placeholder="Ví dụ: 1385">
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 2: Ước tính trực tiếp theo số kWh -->
+    <div id="panelDirect" style="display: none;">
+      <div class="form-group">
+        <label for="directKwhInput">Sản lượng điện dự kiến (kWh)</label>
+        <input id="directKwhInput" type="number" inputmode="numeric" placeholder="Ví dụ: 135">
+        <div class="form-help">Nhập số kWh ước lượng gia đình bạn sẽ sử dụng trong kỳ này.</div>
+      </div>
+    </div>
+
+    <!-- Hộp thông báo / Trạng thái nhập liệu thông minh (Không dùng icon) -->
+    <div class="input-hint hint-neutral" id="inputHint">
+      Nhập chỉ số công tơ để bắt đầu tính.
+    </div>
+
+    <!-- Tùy chọn VAT & So sánh tháng trước -->
     <div class="form-row">
       <div class="form-group">
-        <label for="oldIdx">Chỉ số cũ (kWh)</label>
-        <input id="oldIdx" type="number" inputmode="numeric" placeholder="Ví dụ: 100">
+        <label for="vatSelect">Thuế suất GTGT (VAT)</label>
+        <select id="vatSelect">
+          <option value="0.08" selected>8% (Mức kích cầu hiện hành)</option>
+          <option value="0.10">10% (Thuế suất chuẩn)</option>
+          <option value="0.00">0% (Miễn thuế GTGT)</option>
+        </select>
+        <div class="form-help">Áp dụng theo quy định hiện hành (mặc định 8%).</div>
       </div>
+
       <div class="form-group">
-        <label for="newIdx">Chỉ số mới (kWh)</label>
-        <input id="newIdx" type="number" inputmode="numeric" placeholder="Ví dụ: 250">
+        <label for="prevKwhInput">Số kWh tháng trước (Tùy chọn)</label>
+        <input id="prevKwhInput" type="number" inputmode="numeric" placeholder="Ví dụ: 120">
+        <div class="comparison-text text-neutral" id="comparisonResult"></div>
       </div>
     </div>
 
-    <div class="form-group">
-      <label for="vatSelect">Thuế suất GTGT (VAT)</label>
-      <select id="vatSelect">
-        <option value="0.08" selected>8% (Quy định kích cầu tiêu dùng hiện hành)</option>
-        <option value="0.10">10% (Thuế suất chuẩn)</option>
-        <option value="0.0">0% (Miễn thuế GTGT)</option>
-      </select>
-    </div>
-
-    <div class="error-box" id="errMsg"></div>
-
+    <!-- Nút hành động -->
     <div class="btn-group">
       <button class="primary" id="calcBtn">Tính Tiền Điện</button>
       <button class="secondary" id="resetBtn">Làm Mới</button>
     </div>
+  </div>
 
-    <!-- Nút chọn nhanh để demo kiểm thử -->
-    <div class="presets-wrapper">
-      <div class="presets-title">Dữ liệu mẫu kiểm thử nhanh (Demo Test Cases):</div>
-      <div class="preset-chips">
-        <button class="preset-btn" data-old="100" data-new="145">Bậc 1 (45 kWh)</button>
-        <button class="preset-btn" data-old="100" data-new="185">Bậc 2 (85 kWh)</button>
-        <button class="preset-btn" data-old="100" data-new="250">Bậc 3 (150 kWh)</button>
-        <button class="preset-btn" data-old="100" data-new="450">Bậc 5 (350 kWh)</button>
-        <button class="preset-btn" data-old="0" data-new="520">Bậc 6 (>400 kWh)</button>
-        <button class="preset-btn" data-old="200" data-new="150">Lỗi: Mới &lt; Cũ</button>
+  <!-- PHẦN KẾT QUẢ NỔI BẬT NHẤT (HERO RESULT) -->
+  <div class="card" id="resultCard">
+    <div class="hero-header">
+      <span class="hero-label">Ước Tính Tiền Điện</span>
+      <span class="hero-kwh-pill" id="heroKwh">0 kWh</span>
+    </div>
+
+    <div class="hero-center">
+      <div class="hero-price" id="heroTotal">0 đ</div>
+      <div class="hero-subtext">Tổng tiền thanh toán (đã bao gồm thuế VAT)</div>
+    </div>
+
+    <!-- Tóm tắt số liệu -->
+    <div class="bill-rows">
+      <div class="bill-row">
+        <span>Tiền điện (chưa thuế):</span>
+        <span id="rSub">0 đ</span>
+      </div>
+      <div class="bill-row">
+        <span>Thuế VAT <span id="rVatRate">(8%)</span>:</span>
+        <span id="rVat">0 đ</span>
+      </div>
+      <div class="bill-row final">
+        <span>Tổng thanh toán:</span>
+        <span id="rFinalTotal">0 đ</span>
       </div>
     </div>
-  </div>
 
-  <!-- Thẻ kết quả tính toán -->
-  <div class="card" id="resultCard">
-    <div class="result-row">
-      <span>Tổng sản lượng tiêu thụ:</span>
-      <strong id="rKwh" style="font-size: 1.1rem;"></strong>
-    </div>
-
-    <div class="table-container">
-      <table id="tierTable">
-        <thead>
-          <tr>
-            <th>Bậc</th>
-            <th>Khoảng kWh</th>
-            <th>Số kWh tính</th>
-            <th>Đơn giá</th>
-            <th>Thành tiền</th>
-          </tr>
-        </thead>
-        <tbody id="tierBody"></tbody>
-      </table>
-    </div>
-
-    <div class="result-row">
-      <span>Tiền điện (trước thuế):</span>
-      <span id="rSub"></span>
-    </div>
-    <div class="result-row">
-      <span>Thuế VAT <span id="rVatRate"></span>:</span>
-      <span id="rVat"></span>
-    </div>
-    <div class="result-row total">
-      <span>Tổng tiền thanh toán:</span>
-      <span id="rTotal"></span>
-    </div>
-
-    <div class="action-group">
-      <button class="secondary" id="copyBtn">Sao chép kết quả</button>
+    <!-- Nút Sao chép & In hóa đơn -->
+    <div class="result-actions">
+      <button class="secondary" id="copyBtn">Sao chép hóa đơn</button>
       <button class="secondary" id="printBtn">In hóa đơn</button>
     </div>
+
+    <!-- Progressive Disclosure: Chi tiết cách tính theo bậc -->
+    <details class="breakdown-details">
+      <summary>Xem chi tiết cách tính theo 6 bậc thang</summary>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Bậc</th>
+              <th>Khoảng kWh</th>
+              <th>Số kWh tính</th>
+              <th>Đơn giá</th>
+              <th>Thành tiền</th>
+            </tr>
+          </thead>
+          <tbody id="tierBody"></tbody>
+        </table>
+      </div>
+    </details>
   </div>
 
-  <!-- Tham chiếu bảng giá điện hiện hành -->
-  <details>
-    <summary>Biểu giá bán lẻ điện sinh hoạt 6 bậc (QĐ 2941/QĐ-BCT)</summary>
+  <!-- GỢI Ý TIẾT KIỆM ĐIỆN THÔNG MINH -->
+  <div class="card" id="savingCard">
+    <div class="card-title-bar">
+      <span class="card-title">Tư Vấn Tiết Kiệm Điện</span>
+      <span class="badge-tag">Gợi Ý</span>
+    </div>
+    <div class="saving-advice" id="savingAdvice"></div>
+    <div class="saving-highlight" id="savingPotential" style="display: none;"></div>
+  </div>
+
+  <!-- LỊCH SỬ TÍNH TOÁN (LƯU LOCALSTORAGE) -->
+  <div class="card history-card">
+    <div class="history-head">
+      <span style="font-weight: 700; font-size: 0.95rem;">Lịch Sử Tính Gần Đây</span>
+      <button class="clear-btn" id="clearHistoryBtn" style="display: none;">Xóa lịch sử</button>
+    </div>
+    <div class="history-empty" id="historyEmpty">Chưa có lượt tính nào được lưu.</div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+
+  <!-- THAM CHIẾU BIỂU GIÁ BẬC THANG EVN HIỆN HÀNH -->
+  <details class="ref-accordion">
+    <summary style="cursor: pointer; font-weight: 600;">Biểu giá bán lẻ điện sinh hoạt EVN (QĐ 2941/QĐ-BCT)</summary>
     <div class="ref-tier-list" id="refTierList"></div>
   </details>
+
+  <footer>
+    Hệ thống tính tiền điện sinh hoạt theo biểu giá bậc thang lũy tiến của EVN.
+  </footer>
 </main>
 
 <script type="module" src="./js/app.js"></script>

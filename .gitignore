@@ -4,3 +4,14 @@ Thumbs.db
 .vscode/
 .idea/
 *.log
+
+# Documents & Spreadsheets
+*.docx
+*.xlsx
+*.doc
+*.xls
+~$*
+
+# Agents
+.agents/
+.agent/

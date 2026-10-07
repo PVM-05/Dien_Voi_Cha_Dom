@@ -1,26 +1,15 @@
 // Module tính toán tiền điện - Core Business Logic
-// Tách biệt hoàn toàn khỏi giao diện (DOM) để phục vụ Unit Testing & Kiểm thử tự động
+import { DEFAULT_TIERS, APP_LIMITS } from './config.js';
+
+export { DEFAULT_TIERS };
 
 /**
- * Biểu giá điện sinh hoạt bậc thang (theo Quyết định số 2941/QĐ-BCT và quy định hiện hành của EVN)
- * Đơn vị: VNĐ/kWh
- */
-export const DEFAULT_TIERS = [
-  { tier: 1, name: 'Bậc 1', from: 0,   to: 50,       price: 1984, desc: 'Cho kWh từ 0 - 50' },
-  { tier: 2, name: 'Bậc 2', from: 50,  to: 100,      price: 2050, desc: 'Cho kWh từ 51 - 100' },
-  { tier: 3, name: 'Bậc 3', from: 100, to: 200,      price: 2380, desc: 'Cho kWh từ 101 - 200' },
-  { tier: 4, name: 'Bậc 4', from: 200, to: 300,      price: 2998, desc: 'Cho kWh từ 201 - 300' },
-  { tier: 5, name: 'Bậc 5', from: 300, to: 400,      price: 3350, desc: 'Cho kWh từ 301 - 400' },
-  { tier: 6, name: 'Bậc 6', from: 400, to: Infinity,  price: 3460, desc: 'Cho kWh từ 401 trở lên' }
-];
-
-/**
- * Kiểm tra tính hợp lệ của đầu vào (Input Validation)
- * Sử dụng cho kiểm thử phân vùng tương đương (EP) và phân tích giá trị biên (BVA)
+ * Kiểm tra tính hợp lệ của đầu vào công tơ (Input Validation)
+ * Phục vụ cho tính theo cặp chỉ số (Cũ - Mới)
  * 
  * @param {any} oldIdx - Chỉ số cũ
  * @param {any} newIdx - Chỉ số mới
- * @returns {{ isValid: boolean, error?: string, code?: string }}
+ * @returns {{ isValid: boolean, error?: string, code?: string, oldIndex?: number, newIndex?: number }}
  */
 export function validateInput(oldIdx, newIdx) {
   // 1. Kiểm tra để trống / undefined / null
@@ -55,10 +44,10 @@ export function validateInput(oldIdx, newIdx) {
     return { isValid: false, error: 'Chỉ số công tơ phải là số nguyên không âm.', code: 'ERR_NOT_INTEGER' };
   }
 
-  // 5. Kiểm tra giới hạn tối đa tránh tràn số / phi lý (max 10 triệu kWh)
-  const MAX_INDEX = 10000000;
-  if (numOld > MAX_INDEX || numNew > MAX_INDEX) {
-    return { isValid: false, error: `Chỉ số không được vượt quá ${MAX_INDEX.toLocaleString()} kWh.`, code: 'ERR_MAX_EXCEEDED' };
+  // 5. Kiểm tra giới hạn tối đa tránh tràn số / phi lý
+  const maxLimit = APP_LIMITS?.MAX_KWH || 10000000;
+  if (numOld > maxLimit || numNew > maxLimit) {
+    return { isValid: false, error: `Chỉ số không được vượt quá ${maxLimit.toLocaleString('vi-VN')} kWh.`, code: 'ERR_MAX_EXCEEDED' };
   }
 
   // 6. Kiểm tra chỉ số mới phải lớn hơn hoặc bằng chỉ số cũ
@@ -67,6 +56,34 @@ export function validateInput(oldIdx, newIdx) {
   }
 
   return { isValid: true, oldIndex: numOld, newIndex: numNew };
+}
+
+/**
+ * Kiểm tra tính hợp lệ khi người dùng nhập trực tiếp sản lượng kWh (Ước tính nhanh)
+ * 
+ * @param {any} kwhInput - Sản lượng kWh nhập vào
+ * @returns {{ isValid: boolean, error?: string, kwh?: number }}
+ */
+export function validateDirectKwh(kwhInput) {
+  if (kwhInput === undefined || kwhInput === null || String(kwhInput).trim() === '') {
+    return { isValid: false, error: 'Vui lòng nhập số kWh dự kiến.' };
+  }
+
+  const numKwh = Number(kwhInput);
+  if (!Number.isFinite(numKwh)) {
+    return { isValid: false, error: 'Số kWh phải là số hợp lệ.' };
+  }
+
+  if (numKwh < 0) {
+    return { isValid: false, error: 'Số kWh không được âm.' };
+  }
+
+  const maxLimit = APP_LIMITS?.MAX_KWH || 10000000;
+  if (numKwh > maxLimit) {
+    return { isValid: false, error: `Số kWh không được vượt quá ${maxLimit.toLocaleString('vi-VN')} kWh.` };
+  }
+
+  return { isValid: true, kwh: Math.round(numKwh) };
 }
 
 /**
@@ -121,7 +138,7 @@ export function calculateTierDetails(kwh, tiers = DEFAULT_TIERS) {
 }
 
 /**
- * Tính toàn bộ hóa đơn tiền điện
+ * Tính toàn bộ hóa đơn tiền điện theo chỉ số cũ và mới
  * 
  * @param {number|string} oldIdx - Chỉ số cũ
  * @param {number|string} newIdx - Chỉ số mới
@@ -148,8 +165,43 @@ export function calculateElectricityBill(oldIdx, newIdx, vatRate = 0.08, tiers =
 
   return {
     success: true,
+    calculationType: 'meter',
     oldIndex: validation.oldIndex,
     newIndex: validation.newIndex,
+    kwh: kwh,
+    subtotal: subtotal,
+    vatRate: vatRate,
+    vatAmount: vatAmount,
+    totalAmount: totalAmount,
+    tierBreakdown: tierBreakdown
+  };
+}
+
+/**
+ * Tính hóa đơn tiền điện trực tiếp theo số kWh (Ước tính nhanh)
+ * 
+ * @param {number|string} kwhInput - Số kWh tiêu thụ
+ * @param {number} vatRate - Thuế suất VAT
+ * @param {Array} tiers - Biểu giá bậc thang
+ * @returns {object} Kết quả hóa đơn hoặc lỗi
+ */
+export function calculateDirectKwh(kwhInput, vatRate = 0.08, tiers = DEFAULT_TIERS) {
+  const validation = validateDirectKwh(kwhInput);
+  if (!validation.isValid) {
+    return {
+      success: false,
+      error: validation.error
+    };
+  }
+
+  const kwh = validation.kwh;
+  const { tierBreakdown, subtotal } = calculateTierDetails(kwh, tiers);
+  const vatAmount = Math.round(subtotal * vatRate);
+  const totalAmount = subtotal + vatAmount;
+
+  return {
+    success: true,
+    calculationType: 'direct',
     kwh: kwh,
     subtotal: subtotal,
     vatRate: vatRate,
@@ -162,4 +214,9 @@ export function calculateElectricityBill(oldIdx, newIdx, vatRate = 0.08, tiers =
 // Định dạng tiền tệ VNĐ
 export function formatCurrency(amount) {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+}
+
+// Định dạng số nguyên có dấu chấm ngăn cách
+export function formatNumber(num) {
+  return new Intl.NumberFormat('vi-VN').format(num);
 }
