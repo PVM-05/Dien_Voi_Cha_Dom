@@ -4,9 +4,17 @@
   "description": "Hệ thống tính tiền điện sinh hoạt bậc thang và kiểm định chất lượng phần mềm",
   "type": "module",
   "scripts": {
-    "test": "node run-tests.js"
+    "test": "node run-tests.js",
+    "report": "node generate-report.js"
   },
-  "keywords": ["sqa", "testing", "electricity-calculator"],
+  "keywords": [
+    "sqa",
+    "testing",
+    "electricity-calculator"
+  ],
   "author": "PVM-05",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "xlsx": "^0.18.5"
+  }
 }
