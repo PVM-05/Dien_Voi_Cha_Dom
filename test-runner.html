@@ -358,6 +358,8 @@
       <button class="filter-btn" data-filter="BVA">Giá trị biên (<span id="countBVA">0</span>)</button>
       <button class="filter-btn" data-filter="VAT">Bảng quyết định & VAT (<span id="countVAT">0</span>)</button>
       <button class="filter-btn" data-filter="ROBUST">Bảo mật & Chịu lỗi (<span id="countRobust">0</span>)</button>
+      <button class="filter-btn" data-filter="QE">Ước tính nhanh (<span id="countQE">0</span>)</button>
+      <button class="filter-btn" data-filter="STORAGE">Quản lý lịch sử (<span id="countStorage">0</span>)</button>
     </div>
     <div>
       <button id="btnToggleAll" class="btn btn-outline" style="font-size: 0.8rem; padding: 6px 12px;">Mở / Đóng chi tiết</button>
@@ -398,6 +400,8 @@
     document.getElementById('countBVA').textContent = report.results.filter(r => r.id.includes('_BVA_')).length;
     document.getElementById('countVAT').textContent = report.results.filter(r => r.id.includes('_VAT_')).length;
     document.getElementById('countRobust').textContent = report.results.filter(r => r.id.includes('_SEC_')).length;
+    document.getElementById('countQE').textContent = report.results.filter(r => r.id.includes('_QE_')).length;
+    document.getElementById('countStorage').textContent = report.results.filter(r => r.id.includes('_HIST_')).length;
 
     renderList();
   }
@@ -412,12 +416,18 @@
       if (activeFilter === 'BVA') return item.id.includes('_BVA_');
       if (activeFilter === 'VAT') return item.id.includes('_VAT_');
       if (activeFilter === 'ROBUST') return item.id.includes('_SEC_');
+      if (activeFilter === 'QE') return item.id.includes('_QE_');
+      if (activeFilter === 'STORAGE') return item.id.includes('_HIST_');
       return true;
     });
 
     filtered.forEach(tc => {
       const card = document.createElement('div');
       card.className = 'test-card';
+      const inputDisplay = tc.input 
+        ? JSON.stringify(tc.input, null, 2) 
+        : '(Thực thi qua hàm kiểm thử Storage Engine)';
+
       card.innerHTML = `
         <div class="test-header">
           <div class="test-title-area">
@@ -434,8 +444,8 @@
         </div>
         <div class="test-desc">${tc.description}</div>
         <div class="test-details">
-          <div><strong>Input Data:</strong></div>
-          <pre class="code-box">${JSON.stringify(tc.input, null, 2)}</pre>
+          <div><strong>Input Data / Execution:</strong></div>
+          <pre class="code-box">${inputDisplay}</pre>
           <div style="margin-top:8px;"><strong>Actual Output:</strong></div>
           <pre class="code-box">${JSON.stringify(tc.actualResult, null, 2)}</pre>
           ${tc.errorMessage ? `<div style="color:var(--danger); margin-top:8px;"><strong>Error:</strong> ${tc.errorMessage}</div>` : ''}

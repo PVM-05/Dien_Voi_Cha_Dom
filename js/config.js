@@ -1,8 +1,11 @@
 // Cấu hình hệ thống biểu giá và tùy chọn ứng dụng (EVN Config)
 
 /**
- * Biểu giá bán lẻ điện sinh hoạt bậc thang theo Quyết định số 2941/QĐ-BCT
+ * Biểu giá bán lẻ điện sinh hoạt bậc thang tham chiếu
+ * Căn cứ: Quyết định số 2941/QĐ-BCT của Bộ Công Thương ban hành ngày 08/11/2023 (áp dụng từ ngày 09/11/2023)
  * Đơn vị: VNĐ/kWh (chưa bao gồm thuế GTGT)
+ * 
+ * Lưu ý: Đây là biểu giá tham chiếu phục vụ mục đích học thuật / kiểm định phần mềm.
  */
 export const DEFAULT_TIERS = [
   { tier: 1, name: 'Bậc 1', from: 0,   to: 50,       price: 1984, desc: 'Cho kWh từ 0 - 50' },
@@ -14,13 +17,23 @@ export const DEFAULT_TIERS = [
 ];
 
 /**
- * Các mức thuế suất GTGT (VAT) áp dụng
+ * Các mức thuế suất GTGT (VAT) tham chiếu
+ * Căn cứ: Luật Thuế GTGT và các Nghị quyết của Quốc hội về chính sách giảm thuế GTGT
  */
 export const VAT_OPTIONS = [
-  { rate: 0.08, label: '8% (Mức kích cầu hiện hành)', isDefault: true },
-  { rate: 0.10, label: '10% (Thuế suất chuẩn)' },
-  { rate: 0.00, label: '0% (Miễn thuế GTGT)' }
+  { rate: 0.08, label: '8% (Mức tham chiếu giảm thuế GTGT)', isDefault: true, desc: 'Theo chính sách kích cầu tiêu dùng' },
+  { rate: 0.10, label: '10% (Thuế suất chuẩn theo Luật Thuế GTGT)', desc: 'Thuế suất chuẩn' },
+  { rate: 0.00, label: '0% (Miễn thuế GTGT)', desc: 'Đối tượng được miễn thuế' }
 ];
+
+/**
+ * Thông tin văn bản pháp lý tham chiếu
+ */
+export const LEGAL_REFERENCES = {
+  ELECTRICITY_TARIFF: 'Quyết định số 2941/QĐ-BCT (Áp dụng từ 09/11/2023)',
+  VAT_POLICY: 'Nghị quyết của Quốc hội về giảm thuế giá trị gia tăng & Luật Thuế GTGT',
+  METER_ROUNDING_RULE: 'Nguyên tắc làm tròn số học theo quy định đo đếm điện năng thương phẩm'
+};
 
 /**
  * Cấu hình lưu trữ và giới hạn

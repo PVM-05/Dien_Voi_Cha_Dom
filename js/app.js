@@ -2,6 +2,7 @@
 import { 
   calculateElectricityBill, 
   calculateDirectKwh, 
+  validateDirectKwh,
   formatCurrency, 
   formatNumber,
   DEFAULT_TIERS 
@@ -40,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const resultCard = document.getElementById('resultCard');
   const heroKwh = document.getElementById('heroKwh');
   const heroTotal = document.getElementById('heroTotal');
+  const heroRoundingNotice = document.getElementById('heroRoundingNotice');
   const rSub = document.getElementById('rSub');
   const rVat = document.getElementById('rVat');
   const rVatRate = document.getElementById('rVatRate');
@@ -133,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- In hóa đơn ---
   printBtn.addEventListener('click', () => window.print());
 
-  // --- Xóa lịch sử ---
+  // --- Xóa toàn bộ lịch sử ---
   clearHistoryBtn.addEventListener('click', () => {
     if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử tính toán?')) {
       clearAllHistory();
@@ -198,13 +200,17 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const num = Number(val);
-    if (!Number.isFinite(num) || num < 0) {
-      setHint('error', 'Số kWh phải là số dương hợp lệ.');
+    const validation = validateDirectKwh(val);
+    if (!validation.isValid) {
+      setHint('error', validation.error);
       return;
     }
 
-    setHint('success', `Đang ước tính cho ${formatNumber(Math.round(num))} kWh điện tiêu thụ.`);
+    if (validation.isRounded) {
+      setHint('success', `Số kWh lẻ (${validation.originalKwh}) được làm tròn số học thành ${formatNumber(validation.kwh)} kWh (theo nguyên tắc đo đếm điện thương phẩm).`);
+    } else {
+      setHint('success', `Đang ước tính cho ${formatNumber(validation.kwh)} kWh điện tiêu thụ.`);
+    }
     handleCalculate(false);
   }
 
@@ -259,6 +265,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Hero Result
     heroKwh.textContent = `${formatNumber(res.kwh)} kWh`;
     heroTotal.textContent = formatCurrency(res.totalAmount);
+
+    // Thông báo làm tròn (nếu có)
+    if (heroRoundingNotice) {
+      if (res.isRounded) {
+        heroRoundingNotice.textContent = `Làm tròn từ ${res.originalKwh} kWh theo nguyên tắc đo đếm điện thương phẩm`;
+        heroRoundingNotice.style.display = 'block';
+      } else {
+        heroRoundingNotice.style.display = 'none';
+      }
+    }
 
     // 2. Tóm tắt số liệu
     rSub.textContent = formatCurrency(res.subtotal);
@@ -323,29 +339,72 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // =========================================================================
+  // SAO CHÉP HÓA ĐƠN VỚI CƠ CHẾ DỰ PHÒNG (CLIPBOARD FALLBACK)
+  // =========================================================================
+
+  function copyTextToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text).catch(() => fallbackCopyText(text));
+    }
+    return fallbackCopyText(text);
+  }
+
+  function fallbackCopyText(text) {
+    return new Promise((resolve, reject) => {
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.top = '0';
+        textarea.style.left = '0';
+        textarea.style.width = '2em';
+        textarea.style.height = '2em';
+        textarea.style.padding = '0';
+        textarea.style.border = 'none';
+        textarea.style.outline = 'none';
+        textarea.style.boxShadow = 'none';
+        textarea.style.background = 'transparent';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        if (successful) resolve();
+        else reject(new Error('Lỗi thực thi lệnh sao chép'));
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
   function handleCopy() {
     if (!latestResult) return;
 
-    let text = `HOA DON TIEN DIEN SINH HOAT\n`;
+    let text = `HOA DON TIEN DIEN SINH HOAT (THAM CHIEU)\n`;
     if (latestResult.calculationType === 'meter') {
       text += `Chi so cu: ${formatNumber(latestResult.oldIndex)} | Chi so moi: ${formatNumber(latestResult.newIndex)}\n`;
     }
-    text += `San luong tieu thu: ${formatNumber(latestResult.kwh)} kWh\n`;
-    text += `Tien dien (chua thue): ${formatCurrency(latestResult.subtotal)}\n`;
+    text += `San luong tieu thu: ${formatNumber(latestResult.kwh)} kWh`;
+    if (latestResult.isRounded) {
+      text += ` (lam tron tu ${latestResult.originalKwh} kWh)`;
+    }
+    text += `\nTien dien (chua thue): ${formatCurrency(latestResult.subtotal)}\n`;
     text += `Thue VAT (${Math.round(latestResult.vatRate * 100)}%): ${formatCurrency(latestResult.vatAmount)}\n`;
-    text += `TONG THANH TOAN: ${formatCurrency(latestResult.totalAmount)}`;
+    text += `TONG THANH TOAN: ${formatCurrency(latestResult.totalAmount)}\n`;
+    text += `Bieu gia tham chieu: QD 2941/QD-BCT`;
 
-    navigator.clipboard.writeText(text).then(() => {
+    copyTextToClipboard(text).then(() => {
       const origText = copyBtn.textContent;
       copyBtn.textContent = 'Đã sao chép!';
       setTimeout(() => copyBtn.textContent = origText, 2000);
     }).catch(() => {
-      alert('Không thể sao chép vào bộ nhớ đệm.');
+      alert('Không thể sao chép vào bộ nhớ đệm. Vui lòng sao chép thủ công.');
     });
   }
 
   // =========================================================================
-  // LỊCH SỬ TÍNH TOÁN
+  // LỊCH SỬ TÍNH TOÁN (HỖ TRỢ XÓA TỪNG MỤC VÀ XÓA TẤT CẢ)
   // =========================================================================
 
   function renderHistory() {
@@ -376,12 +435,21 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="history-action-area">
           <div class="history-amount">${formatCurrency(item.totalAmount)}</div>
-          <button class="history-reload-btn" data-id="${item.id}">Xem lại</button>
+          <div class="history-actions-row">
+            <button class="history-reload-btn" data-id="${item.id}">Xem lại</button>
+            <button class="history-delete-btn" data-id="${item.id}" title="Xóa lượt tính này">Xóa</button>
+          </div>
         </div>
       `;
 
       card.querySelector('.history-reload-btn').addEventListener('click', () => {
         loadHistoryItem(item);
+      });
+
+      card.querySelector('.history-delete-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        removeHistoryItem(item.id);
+        renderHistory();
       });
 
       historyList.appendChild(card);

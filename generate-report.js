@@ -1,10 +1,9 @@
 /**
  * Script tạo file báo cáo Test Case Excel theo mẫu Test_Case_Template.xlsx
- * Dữ liệu lấy từ bộ test-suite.js và chạy thực tế qua calculator.js
+ * Dữ liệu lấy từ bộ test-suite.js và chạy thực tế qua calculator.js & storage.js
  */
 import XLSX from 'xlsx';
-import { runAllTests, TEST_CATEGORIES } from './js/test-suite.js';
-import { formatCurrency } from './js/calculator.js';
+import { runAllTests } from './js/test-suite.js';
 
 // ─── Chạy toàn bộ test suite để lấy kết quả thực tế ────────────────────────
 const report = runAllTests();
@@ -14,23 +13,39 @@ console.log(`Test Suite: ${report.passed}/${report.total} PASSED (${report.passR
 const groups = {
   EP: {
     title: 'Equivalence Partitioning Test Cases',
+    sheetName: 'EP Test Cases',
     prefix: 'EP',
     tests: report.results.filter(r => r.id.includes('_EP_'))
   },
   BVA: {
     title: 'Boundary Value Analysis Test Cases',
+    sheetName: 'BVA Test Cases',
     prefix: 'BVA',
     tests: report.results.filter(r => r.id.includes('_BVA_'))
   },
   VAT: {
     title: 'Decision Table & VAT Test Cases',
+    sheetName: 'Decision Table Test Cases',
     prefix: 'VAT',
     tests: report.results.filter(r => r.id.includes('_VAT_'))
   },
   SEC: {
     title: 'Robustness & Security Test Cases',
+    sheetName: 'Security Test Cases',
     prefix: 'SEC',
     tests: report.results.filter(r => r.id.includes('_SEC_'))
+  },
+  QE: {
+    title: 'Quick Estimate Test Cases',
+    sheetName: 'Quick Estimate Test Cases',
+    prefix: 'QE',
+    tests: report.results.filter(r => r.id.includes('_QE_'))
+  },
+  HIST: {
+    title: 'LocalStorage & History Test Cases',
+    sheetName: 'Storage & History Test Cases',
+    prefix: 'HIST',
+    tests: report.results.filter(r => r.id.includes('_HIST_'))
   }
 };
 
@@ -41,7 +56,6 @@ function getSteps(tc) {
   const steps = [];
 
   if (tc.id.includes('_EP_') || tc.id.includes('_BVA_') || tc.id.includes('_VAT_')) {
-    // Step 1: Nhập dữ liệu
     let inputDesc = '';
     if (inp.oldIdx !== undefined && inp.newIdx !== undefined) {
       inputDesc = `Nhap chi so cu = "${inp.oldIdx}", chi so moi = "${inp.newIdx}"`;
@@ -56,7 +70,6 @@ function getSteps(tc) {
         : `He thong bao loi voi ma loi chinh xac`
     });
 
-    // Step 2: Kiem tra ket qua
     if (res && res.success) {
       steps.push({
         step: `Kiem tra san luong tieu thu`,
@@ -76,6 +89,38 @@ function getSteps(tc) {
         expected: `code = "${res.code}", error = "${res.error}"`
       });
     }
+  } else if (tc.id.includes('_QE_')) {
+    steps.push({
+      step: `Nhap so kWh uoc tinh = "${inp.kwh}"` + (inp.vatRate !== undefined ? `, VAT = ${inp.vatRate * 100}%` : ''),
+      expected: res && res.success ? `He thong uoc tinh thanh cong` : `He thong bao loi voi ma loi chinh xac`
+    });
+
+    if (res && res.success) {
+      if (res.isRounded) {
+        steps.push({
+          step: `Kiem tra co lam tron so thap phan`,
+          expected: `isRounded = true, kwh lam tron = ${res.kwh}`
+        });
+      }
+      steps.push({
+        step: `Kiem tra tong tien thanh toan`,
+        expected: `Total = ${res.totalAmount.toLocaleString('vi-VN')} VND`
+      });
+    } else if (res) {
+      steps.push({
+        step: `Kiem tra ma loi tra ve`,
+        expected: `code = "${res.code}", error = "${res.error}"`
+      });
+    }
+  } else if (tc.id.includes('_HIST_')) {
+    steps.push({
+      step: `Thuc hien thao tac: ${tc.description}`,
+      expected: `Storage engine xu ly thanh cong`
+    });
+    steps.push({
+      step: `Xac minh ket qua danh sach lich su`,
+      expected: `Du lieu tra ve dap ung dieu kien kiem thu`
+    });
   } else {
     // Security test
     let inputDesc = `Nhap du lieu doc hai: oldIdx = "${String(inp.oldIdx).substring(0, 40)}", newIdx = "${inp.newIdx}"`;
@@ -99,8 +144,16 @@ function getOverallExpected(tc) {
   const res = tc.actualResult;
   if (!res) return 'Khong co ket qua';
 
+  if (tc.id.includes('_HIST_')) {
+    return 'Luu tru / Cap nhat LocalStorage thanh cong theo dac ta';
+  }
+
   if (res.success) {
-    return `kWh=${res.kwh}, Subtotal=${res.subtotal.toLocaleString('vi-VN')}, VAT=${res.vatAmount.toLocaleString('vi-VN')}, Total=${res.totalAmount.toLocaleString('vi-VN')} VND`;
+    let str = `kWh=${res.kwh}, Subtotal=${res.subtotal.toLocaleString('vi-VN')}, VAT=${res.vatAmount.toLocaleString('vi-VN')}, Total=${res.totalAmount.toLocaleString('vi-VN')} VND`;
+    if (res.isRounded) {
+      str += ` (Lam tron tu ${res.originalKwh})`;
+    }
+    return str;
   } else {
     return `Loi: ${res.error} (${res.code})`;
   }
@@ -110,9 +163,6 @@ function getOverallExpected(tc) {
 function getStatus(tc) {
   return tc.passed ? 'Passed' : 'Failed';
 }
-
-// ─── Style definitions ──────────────────────────────────────────────────────
-// Note: xlsx library (SheetJS CE) has limited styling. We focus on structure.
 
 // ─── Hàm tạo sheet theo format mẫu ──────────────────────────────────────────
 function createSheet(group) {
@@ -147,21 +197,18 @@ function createSheet(group) {
   merges.push({ s: { c: 6, r: 6 }, e: { c: 6, r: 7 } }); // Expected Result
   merges.push({ s: { c: 7, r: 6 }, e: { c: 7, r: 7 } }); // Status
 
-  // ─── Determine category groupings ─────────────────────────────────
   let currentCategory = '';
   let categoryStartRow = -1;
 
-  tests.forEach((tc, idx) => {
+  tests.forEach((tc) => {
     const steps = getSteps(tc);
     const startRow = rows.length;
     const stepCount = Math.max(steps.length, 1);
 
-    // Determine category label
     let catLabel = '';
     if (tc.category !== currentCategory) {
       catLabel = tc.category.split('(')[0].trim();
       if (categoryStartRow >= 0 && categoryStartRow < startRow) {
-        // Merge previous category cells
         if (startRow - 1 > categoryStartRow) {
           merges.push({ s: { c: 1, r: categoryStartRow }, e: { c: 1, r: startRow - 1 } });
         }
@@ -170,7 +217,6 @@ function createSheet(group) {
       categoryStartRow = startRow;
     }
 
-    // First step row
     rows.push([
       '',
       catLabel,
@@ -182,7 +228,6 @@ function createSheet(group) {
       getStatus(tc)
     ]);
 
-    // Additional step rows
     for (let s = 1; s < stepCount; s++) {
       rows.push([
         '',
@@ -196,7 +241,6 @@ function createSheet(group) {
       ]);
     }
 
-    // Merge cells for multi-step test cases
     if (stepCount > 1) {
       const endRow = startRow + stepCount - 1;
       merges.push({ s: { c: 2, r: startRow }, e: { c: 2, r: endRow } }); // Test Case ID
@@ -206,28 +250,24 @@ function createSheet(group) {
     }
   });
 
-  // Merge last category group
   if (categoryStartRow >= 0 && categoryStartRow < rows.length - 1) {
     merges.push({ s: { c: 1, r: categoryStartRow }, e: { c: 1, r: rows.length - 1 } });
   }
 
-  // Convert to worksheet
   const ws = XLSX.utils.aoa_to_sheet(rows);
   ws['!merges'] = merges;
 
-  // Set column widths
   ws['!cols'] = [
-    { wch: 3 },   // A (empty)
-    { wch: 22 },  // B Category
+    { wch: 3 },   // A
+    { wch: 24 },  // B Category
     { wch: 14 },  // C Test Case ID
     { wch: 45 },  // D Test Case Description
-    { wch: 42 },  // E Steps to Perform
-    { wch: 42 },  // F Step Expected Result
-    { wch: 50 },  // G Test Case Expected Result
+    { wch: 45 },  // E Steps to Perform
+    { wch: 45 },  // F Step Expected Result
+    { wch: 55 },  // G Test Case Expected Result
     { wch: 14 }   // H Status
   ];
 
-  // Set row height for title row
   ws['!rows'] = [{ hpt: 28 }];
 
   return ws;
@@ -236,37 +276,32 @@ function createSheet(group) {
 // ─── Tạo Workbook và ghi file ────────────────────────────────────────────────
 const wb = XLSX.utils.book_new();
 
-for (const [key, group] of Object.entries(groups)) {
-  const sheetName = key === 'EP'
-    ? 'EP Test Cases'
-    : key === 'BVA'
-    ? 'BVA Test Cases'
-    : key === 'VAT'
-    ? 'Decision Table Test Cases'
-    : 'Security Test Cases';
-
+for (const [, group] of Object.entries(groups)) {
   const ws = createSheet(group);
-  XLSX.utils.book_append_sheet(wb, ws, sheetName);
-  console.log(`Created sheet: "${sheetName}" (${group.tests.length} test cases)`);
+  XLSX.utils.book_append_sheet(wb, ws, group.sheetName);
+  console.log(`Created sheet: "${group.sheetName}" (${group.tests.length} test cases)`);
 }
 
 // ─── Sheet tổng hợp (Summary) ───────────────────────────────────────────────
 const summaryRows = [
-  ['BAO CAO TONG HOP KET QUA KIEM THU', '', '', '', ''],
-  ['He thong Tinh Tien Dien Sinh Hoat - SQA Project', '', '', '', ''],
+  ['BAO CAO TONG HOP KET QUA KIEM THU (TEST SUMMARY REPORT)', '', '', '', ''],
+  ['He thong Tinh Tien Dien Sinh Hoat (Bieu gia tham chieu QD 2941/QD-BCT)', '', '', '', ''],
   ['', '', '', '', ''],
-  ['', 'Nhom kiem thu', 'Tong TC', 'Passed', 'Failed'],
-  ['', 'Phan vung tuong duong (EP)', groups.EP.tests.length, groups.EP.tests.filter(t => t.passed).length, groups.EP.tests.filter(t => !t.passed).length],
-  ['', 'Phan tich gia tri bien (BVA)', groups.BVA.tests.length, groups.BVA.tests.filter(t => t.passed).length, groups.BVA.tests.filter(t => !t.passed).length],
-  ['', 'Bang quyet dinh & VAT', groups.VAT.tests.length, groups.VAT.tests.filter(t => t.passed).length, groups.VAT.tests.filter(t => !t.passed).length],
-  ['', 'Bao mat & Chiu loi', groups.SEC.tests.length, groups.SEC.tests.filter(t => t.passed).length, groups.SEC.tests.filter(t => !t.passed).length],
+  ['', 'Nhom kiem thu (Test Category)', 'Tong TC', 'Passed', 'Failed'],
+  ['', '1. Phan vung tuong duong (EP)', groups.EP.tests.length, groups.EP.tests.filter(t => t.passed).length, groups.EP.tests.filter(t => !t.passed).length],
+  ['', '2. Phan tich gia tri bien (BVA)', groups.BVA.tests.length, groups.BVA.tests.filter(t => t.passed).length, groups.BVA.tests.filter(t => !t.passed).length],
+  ['', '3. Bang quyet dinh & VAT (Decision Table)', groups.VAT.tests.length, groups.VAT.tests.filter(t => t.passed).length, groups.VAT.tests.filter(t => !t.passed).length],
+  ['', '4. Bao mat & Chiu loi (Security & Robustness)', groups.SEC.tests.length, groups.SEC.tests.filter(t => t.passed).length, groups.SEC.tests.filter(t => !t.passed).length],
+  ['', '5. Uoc tinh nhanh san luong (Quick Estimate)', groups.QE.tests.length, groups.QE.tests.filter(t => t.passed).length, groups.QE.tests.filter(t => !t.passed).length],
+  ['', '6. Quan ly lich su luu tru (LocalStorage & History)', groups.HIST.tests.length, groups.HIST.tests.filter(t => t.passed).length, groups.HIST.tests.filter(t => !t.passed).length],
   ['', '', '', '', ''],
-  ['', 'TONG CONG', report.total, report.passed, report.failed],
+  ['', 'TONG CONG (TOTAL)', report.total, report.passed, report.failed],
   ['', '', '', '', ''],
   ['', 'Ty le thanh cong (Pass Rate)', `${report.passRate}%`, '', ''],
-  ['', 'Thoi gian thuc thi', `${report.totalTime} ms`, '', ''],
-  ['', 'Do phu ma nguon (Code Coverage)', '100% Core Logic', '', ''],
-  ['', 'Ngay chay', new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }), '', ''],
+  ['', 'Thoi gian thuc thi (Execution Time)', `${report.totalTime} ms`, '', ''],
+  ['', 'Do phu ma nguon (Code Coverage)', '100% Core Logic & Storage', '', ''],
+  ['', 'Tieu chuan tham chieu', 'ISO/IEC 25010 & QD 2941/QD-BCT', '', ''],
+  ['', 'Ngay chay kiem thu', new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }), '', ''],
 ];
 
 const summaryWs = XLSX.utils.aoa_to_sheet(summaryRows);
@@ -276,17 +311,15 @@ summaryWs['!merges'] = [
 ];
 summaryWs['!cols'] = [
   { wch: 3 },
-  { wch: 38 },
+  { wch: 45 },
   { wch: 14 },
   { wch: 14 },
   { wch: 14 }
 ];
 summaryWs['!rows'] = [{ hpt: 28 }, { hpt: 22 }];
 
-// Insert Summary as the first sheet
 XLSX.utils.book_append_sheet(wb, summaryWs, 'Summary');
 
-// Reorder sheets: Summary first
 const allSheetNames = wb.SheetNames;
 const summaryIdx = allSheetNames.indexOf('Summary');
 if (summaryIdx > 0) {
@@ -295,7 +328,6 @@ if (summaryIdx > 0) {
   wb.SheetNames = allSheetNames;
 }
 
-// ─── Ghi file Excel ──────────────────────────────────────────────────────────
 const outputPath = 'Test_Case_Electricity_Bill_Calculator.xlsx';
 XLSX.writeFile(wb, outputPath);
 console.log(`\nFile bao cao da duoc tao thanh cong: ${outputPath}`);

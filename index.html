@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Tính Tiền Điện Sinh Hoạt - Biểu Giá EVN</title>
+  <title>Tính Tiền Điện Sinh Hoạt - Biểu Giá Tham Chiếu EVN</title>
   <style>
     :root {
       --bg: #f8fafc;
@@ -308,6 +308,12 @@
       font-size: 0.84rem;
       color: var(--text-muted);
     }
+    .hero-rounding-notice {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      font-style: italic;
+    }
 
     /* Breakdown Rows */
     .bill-rows {
@@ -499,9 +505,14 @@
       font-weight: 700;
       color: var(--accent);
       font-size: 0.95rem;
-      margin-bottom: 2px;
+      margin-bottom: 4px;
     }
-    .history-reload-btn {
+    .history-actions-row {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+    .history-reload-btn, .history-delete-btn {
       font-size: 0.75rem;
       padding: 3px 8px;
       background: var(--card);
@@ -509,10 +520,22 @@
       border-radius: 4px;
       cursor: pointer;
       font-weight: 600;
+      transition: all 0.15s ease;
+    }
+    .history-reload-btn {
       color: var(--primary);
     }
     .history-reload-btn:hover {
       border-color: var(--primary);
+      background: var(--card-subtle);
+    }
+    .history-delete-btn {
+      color: var(--text-muted);
+    }
+    .history-delete-btn:hover {
+      color: var(--danger);
+      border-color: var(--danger);
+      background: var(--card-subtle);
     }
 
     /* Reference Table Accordion (Bottom) */
@@ -551,6 +574,7 @@
       text-align: center;
       font-size: 0.8rem;
       color: var(--text-muted);
+      line-height: 1.6;
     }
 
     @media print {
@@ -567,9 +591,9 @@
 <main>
   <!-- Header -->
   <header class="app-header">
-    <div class="brand-pill">Biểu Giá EVN Mới Nhất</div>
+    <div class="brand-pill">Biểu Giá Tham Chiếu (QĐ 2941/QĐ-BCT)</div>
     <h1>Tính Tiền Điện Sinh Hoạt</h1>
-    <p class="subtitle">Ước tính nhanh và chuẩn xác tiền điện sinh hoạt theo bậc thang lũy tiến 6 bậc</p>
+    <p class="subtitle">Ước tính tiền điện sinh hoạt theo biểu giá bậc thang 6 bậc tham chiếu</p>
   </header>
 
   <!-- Chuyển đổi phương thức tính -->
@@ -599,7 +623,7 @@
       <div class="form-group">
         <label for="directKwhInput">Sản lượng điện dự kiến (kWh)</label>
         <input id="directKwhInput" type="number" inputmode="numeric" placeholder="Ví dụ: 135">
-        <div class="form-help">Nhập số kWh ước lượng gia đình bạn sẽ sử dụng trong kỳ này.</div>
+        <div class="form-help">Nhập sản lượng kWh dự kiến. Nếu nhập số thập phân, hệ thống sẽ làm tròn số học về số nguyên gần nhất (theo nguyên tắc đo đếm điện thương phẩm).</div>
       </div>
     </div>
 
@@ -613,11 +637,11 @@
       <div class="form-group">
         <label for="vatSelect">Thuế suất GTGT (VAT)</label>
         <select id="vatSelect">
-          <option value="0.08" selected>8% (Mức kích cầu hiện hành)</option>
-          <option value="0.10">10% (Thuế suất chuẩn)</option>
+          <option value="0.08" selected>8% (Mức tham chiếu giảm thuế GTGT)</option>
+          <option value="0.10">10% (Thuế suất chuẩn theo Luật Thuế GTGT)</option>
           <option value="0.00">0% (Miễn thuế GTGT)</option>
         </select>
-        <div class="form-help">Áp dụng theo quy định hiện hành (mặc định 8%).</div>
+        <div class="form-help">Mức thuế tham chiếu áp dụng cho hóa đơn điện sinh hoạt (mặc định 8%).</div>
       </div>
 
       <div class="form-group">
@@ -644,6 +668,7 @@
     <div class="hero-center">
       <div class="hero-price" id="heroTotal">0 đ</div>
       <div class="hero-subtext">Tổng tiền thanh toán (đã bao gồm thuế VAT)</div>
+      <div class="hero-rounding-notice" id="heroRoundingNotice" style="display: none;"></div>
     </div>
 
     <!-- Tóm tắt số liệu -->
@@ -708,14 +733,14 @@
     <div class="history-list" id="historyList"></div>
   </div>
 
-  <!-- THAM CHIẾU BIỂU GIÁ BẬC THANG EVN HIỆN HÀNH -->
+  <!-- THAM CHIẾU BIỂU GIÁ BẬC THANG EVN -->
   <details class="ref-accordion">
-    <summary style="cursor: pointer; font-weight: 600;">Biểu giá bán lẻ điện sinh hoạt EVN (QĐ 2941/QĐ-BCT)</summary>
+    <summary style="cursor: pointer; font-weight: 600;">Biểu giá bán lẻ điện sinh hoạt tham chiếu (QĐ 2941/QĐ-BCT áp dụng từ 09/11/2023)</summary>
     <div class="ref-tier-list" id="refTierList"></div>
   </details>
 
   <footer>
-    Hệ thống tính tiền điện sinh hoạt theo biểu giá bậc thang lũy tiến của EVN.
+    Hệ thống tính tiền điện sinh hoạt tham chiếu theo biểu giá bậc thang Quyết định số 2941/QĐ-BCT. Dữ liệu tính toán mang tính chất tham khảo học thuật.
   </footer>
 </main>
 

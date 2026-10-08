@@ -66,24 +66,35 @@ export function validateInput(oldIdx, newIdx) {
  */
 export function validateDirectKwh(kwhInput) {
   if (kwhInput === undefined || kwhInput === null || String(kwhInput).trim() === '') {
-    return { isValid: false, error: 'Vui lòng nhập số kWh dự kiến.' };
+    return { isValid: false, error: 'Vui lòng nhập số kWh dự kiến.', code: 'ERR_EMPTY_KWH' };
   }
 
   const numKwh = Number(kwhInput);
   if (!Number.isFinite(numKwh)) {
-    return { isValid: false, error: 'Số kWh phải là số hợp lệ.' };
+    return { isValid: false, error: 'Số kWh phải là số hợp lệ.', code: 'ERR_NAN_KWH' };
   }
 
   if (numKwh < 0) {
-    return { isValid: false, error: 'Số kWh không được âm.' };
+    return { isValid: false, error: 'Số kWh không được âm.', code: 'ERR_NEGATIVE_KWH' };
   }
 
   const maxLimit = APP_LIMITS?.MAX_KWH || 10000000;
   if (numKwh > maxLimit) {
-    return { isValid: false, error: `Số kWh không được vượt quá ${maxLimit.toLocaleString('vi-VN')} kWh.` };
+    return { isValid: false, error: `Số kWh không được vượt quá ${maxLimit.toLocaleString('vi-VN')} kWh.`, code: 'ERR_MAX_EXCEEDED' };
   }
 
-  return { isValid: true, kwh: Math.round(numKwh) };
+  const isDecimal = !Number.isInteger(numKwh);
+  const roundedKwh = Math.round(numKwh);
+
+  return { 
+    isValid: true, 
+    kwh: roundedKwh,
+    originalKwh: numKwh,
+    isRounded: isDecimal,
+    roundingExplanation: isDecimal 
+      ? `Sản lượng ước tính ${numKwh} kWh được làm tròn số học thành ${roundedKwh} kWh (theo nguyên tắc đo đếm điện thương phẩm).` 
+      : null
+  };
 }
 
 /**
@@ -190,7 +201,8 @@ export function calculateDirectKwh(kwhInput, vatRate = 0.08, tiers = DEFAULT_TIE
   if (!validation.isValid) {
     return {
       success: false,
-      error: validation.error
+      error: validation.error,
+      code: validation.code
     };
   }
 
@@ -203,6 +215,9 @@ export function calculateDirectKwh(kwhInput, vatRate = 0.08, tiers = DEFAULT_TIE
     success: true,
     calculationType: 'direct',
     kwh: kwh,
+    originalKwh: validation.originalKwh,
+    isRounded: validation.isRounded,
+    roundingExplanation: validation.roundingExplanation,
     subtotal: subtotal,
     vatRate: vatRate,
     vatAmount: vatAmount,

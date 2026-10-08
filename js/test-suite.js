@@ -3,15 +3,32 @@
 // 1. Phân vùng tương đương (Equivalence Partitioning - EP)
 // 2. Phân tích giá trị biên (Boundary Value Analysis - BVA)
 // 3. Kiểm thử bảng quyết định & tính thuế VAT (Decision Table & VAT)
-// 4. Kiểm thử bảo mật đầu vào & trường hợp ngoại lệ (Robustness & Error Handling)
+// 4. Kiểm thử bảo mật đầu vào & trường hợp ngoại lệ (Robustness & Security)
+// 5. Kiểm thử phương thức ước tính nhanh sản lượng (Quick Estimate)
+// 6. Kiểm thử lưu trữ cục bộ & quản lý lịch sử (LocalStorage & History)
 
-import { calculateElectricityBill, validateInput, DEFAULT_TIERS } from './calculator.js';
+import { 
+  calculateElectricityBill, 
+  calculateDirectKwh, 
+  validateInput, 
+  validateDirectKwh, 
+  DEFAULT_TIERS 
+} from './calculator.js';
+
+import { 
+  saveHistoryItem, 
+  getHistory, 
+  removeHistoryItem, 
+  clearAllHistory 
+} from './storage.js';
 
 export const TEST_CATEGORIES = {
   EP: 'Phân vùng tương đương (Equivalence Partitioning)',
   BVA: 'Phân tích giá trị biên (Boundary Value Analysis)',
   VAT: 'Tính toán & Thuế VAT (Decision Table)',
-  ROBUST: 'Kiểm thử độ chịu lỗi & Bảo mật (Robustness & Security)'
+  ROBUST: 'Kiểm thử độ chịu lỗi & Bảo mật (Robustness & Security)',
+  QUICK: 'Ước tính nhanh theo sản lượng (Quick Estimate)',
+  STORAGE: 'Quản lý lịch sử tính toán (LocalStorage & History)'
 };
 
 export const TEST_CASES = [
@@ -269,6 +286,252 @@ export const TEST_CASES = [
     description: 'Chỉ chứa các ký tự whitespace.',
     input: { oldIdx: '   \t\n  ', newIdx: 200 },
     assert: (res) => res.success === false && res.code === 'ERR_EMPTY_OLD'
+  },
+
+  // =========================================================================
+  // 5. KIỂM THỬ ƯỚC TÍNH NHANH (QUICK ESTIMATE)
+  // =========================================================================
+  {
+    id: 'TC_QE_01',
+    category: TEST_CATEGORIES.QUICK,
+    name: 'Ước tính nhanh thông thường (135 kWh, VAT 8%)',
+    description: 'Nhập trực tiếp 135 kWh, kiểm tra tính toán lũy tiến qua 3 bậc.',
+    input: { kwh: 135, vatRate: 0.08 },
+    assert: (res) => {
+      // 50*1984 + 50*2050 + 35*2380 = 99200 + 102500 + 83300 = 285000
+      // VAT 8% = 22,800; Total = 307,800
+      return res.success === true &&
+             res.kwh === 135 &&
+             res.subtotal === 285000 &&
+             res.vatAmount === 22800 &&
+             res.totalAmount === 307800 &&
+             res.calculationType === 'direct';
+    }
+  },
+  {
+    id: 'TC_QE_02',
+    category: TEST_CATEGORIES.QUICK,
+    name: 'Ước tính nhanh 0 kWh (Không dùng điện)',
+    description: 'Số kWh bằng 0 thì tiền điện và thuế bằng 0 VNĐ.',
+    input: { kwh: 0, vatRate: 0.08 },
+    assert: (res) => res.success === true && res.kwh === 0 && res.totalAmount === 0
+  },
+  {
+    id: 'TC_QE_03',
+    category: TEST_CATEGORIES.QUICK,
+    name: 'Ước tính nhanh để trống số kWh',
+    description: 'Bỏ trống giá trị, hệ thống chặn với mã lỗi ERR_EMPTY_KWH.',
+    input: { kwh: '' },
+    assert: (res) => res.success === false && res.code === 'ERR_EMPTY_KWH'
+  },
+  {
+    id: 'TC_QE_04',
+    category: TEST_CATEGORIES.QUICK,
+    name: 'Ước tính nhanh nhập ký tự không phải số',
+    description: 'Nhập chuỗi chữ cái hoặc ký tự đặc biệt.',
+    input: { kwh: 'xyz@123' },
+    assert: (res) => res.success === false && res.code === 'ERR_NAN_KWH'
+  },
+  {
+    id: 'TC_QE_05',
+    category: TEST_CATEGORIES.QUICK,
+    name: 'Ước tính nhanh số kWh âm',
+    description: 'Số kWh không thể là số âm.',
+    input: { kwh: -50 },
+    assert: (res) => res.success === false && res.code === 'ERR_NEGATIVE_KWH'
+  },
+  {
+    id: 'TC_QE_06',
+    category: TEST_CATEGORIES.QUICK,
+    name: 'Ước tính nhanh số thập phân làm tròn xuống (135.4 kWh)',
+    description: 'Phần lẻ < 0.5 làm tròn xuống 135 kWh, cờ isRounded bật.',
+    input: { kwh: 135.4, vatRate: 0.08 },
+    assert: (res) => {
+      return res.success === true &&
+             res.kwh === 135 &&
+             res.isRounded === true &&
+             res.originalKwh === 135.4 &&
+             res.totalAmount === 307800;
+    }
+  },
+  {
+    id: 'TC_QE_07',
+    category: TEST_CATEGORIES.QUICK,
+    name: 'Ước tính nhanh số thập phân làm tròn lên (135.6 kWh)',
+    description: 'Phần lẻ >= 0.5 làm tròn lên 136 kWh (bậc 3 tính 36 kWh = 85680 đ).',
+    input: { kwh: 135.6, vatRate: 0.08 },
+    assert: (res) => {
+      // Subtotal = 99200 + 102500 + 36*2380 (85680) = 287,380
+      // VAT 8% = round(287380 * 0.08) = 22,990; Total = 310,370
+      return res.success === true &&
+             res.kwh === 136 &&
+             res.isRounded === true &&
+             res.originalKwh === 135.6 &&
+             res.subtotal === 287380 &&
+             res.totalAmount === 310370;
+    }
+  },
+  {
+    id: 'TC_QE_08',
+    category: TEST_CATEGORIES.QUICK,
+    name: 'Ước tính nhanh vượt ngưỡng tối đa (> 10 triệu kWh)',
+    description: 'Chặn số lượng kWh phi lý chống tràn số.',
+    input: { kwh: 12000000 },
+    assert: (res) => res.success === false && res.code === 'ERR_MAX_EXCEEDED'
+  },
+  {
+    id: 'TC_QE_09',
+    category: TEST_CATEGORIES.QUICK,
+    name: 'Ước tính nhanh với thuế VAT 10%',
+    description: '100 kWh với thuế VAT 10% chuẩn.',
+    input: { kwh: 100, vatRate: 0.10 },
+    assert: (res) => {
+      return res.success === true &&
+             res.subtotal === 201700 &&
+             res.vatAmount === 20170 &&
+             res.totalAmount === 221870;
+    }
+  },
+  {
+    id: 'TC_QE_10',
+    category: TEST_CATEGORIES.QUICK,
+    name: 'Ước tính nhanh miễn thuế VAT 0%',
+    description: '100 kWh với VAT 0%.',
+    input: { kwh: 100, vatRate: 0.0 },
+    assert: (res) => {
+      return res.success === true &&
+             res.subtotal === 201700 &&
+             res.vatAmount === 0 &&
+             res.totalAmount === 201700;
+    }
+  },
+
+  // =========================================================================
+  // 6. KIỂM THỬ QUẢN LÝ LỊCH SỬ (LOCALSTORAGE & HISTORY)
+  // =========================================================================
+  {
+    id: 'TC_HIST_01',
+    category: TEST_CATEGORIES.STORAGE,
+    name: 'Khởi tạo danh sách lịch sử khi chưa có dữ liệu',
+    description: 'Khi xóa toàn bộ, getHistory() phải trả về mảng rỗng [].',
+    runner: () => {
+      clearAllHistory();
+      return getHistory();
+    },
+    assert: (res) => Array.isArray(res) && res.length === 0
+  },
+  {
+    id: 'TC_HIST_02',
+    category: TEST_CATEGORIES.STORAGE,
+    name: 'Lưu bản ghi tính toán theo công tơ thành công',
+    description: 'Lưu một kết quả tính chỉ số công tơ vào localStorage.',
+    runner: () => {
+      clearAllHistory();
+      const item = {
+        calculationType: 'meter',
+        oldIndex: 100,
+        newIndex: 250,
+        kwh: 150,
+        subtotal: 320700,
+        vatAmount: 25656,
+        vatRate: 0.08,
+        totalAmount: 346356
+      };
+      const list = saveHistoryItem(item);
+      return list;
+    },
+    assert: (res) => {
+      return Array.isArray(res) &&
+             res.length === 1 &&
+             res[0].calculationType === 'meter' &&
+             res[0].kwh === 150 &&
+             res[0].totalAmount === 346356 &&
+             Boolean(res[0].id) &&
+             Boolean(res[0].dateFormatted);
+    }
+  },
+  {
+    id: 'TC_HIST_03',
+    category: TEST_CATEGORIES.STORAGE,
+    name: 'Lưu bản ghi ước tính nhanh (Quick Estimate)',
+    description: 'Lưu một kết quả ước tính nhanh, oldIndex và newIndex phải là null.',
+    runner: () => {
+      const item = {
+        calculationType: 'direct',
+        kwh: 135,
+        subtotal: 285000,
+        vatAmount: 22800,
+        vatRate: 0.08,
+        totalAmount: 307800
+      };
+      const list = saveHistoryItem(item);
+      return list;
+    },
+    assert: (res) => {
+      return Array.isArray(res) &&
+             res.length >= 2 &&
+             res[0].calculationType === 'direct' &&
+             res[0].oldIndex === null &&
+             res[0].newIndex === null &&
+             res[0].kwh === 135;
+    }
+  },
+  {
+    id: 'TC_HIST_04',
+    category: TEST_CATEGORIES.STORAGE,
+    name: 'Giới hạn tối đa số bản ghi lịch sử (Tối đa 8 bản ghi)',
+    description: 'Lưu liên tiếp 10 bản ghi, danh sách chỉ giữ tối đa 8 bản ghi mới nhất.',
+    runner: () => {
+      clearAllHistory();
+      for (let i = 1; i <= 10; i++) {
+        saveHistoryItem({
+          calculationType: 'direct',
+          kwh: i * 50,
+          totalAmount: i * 100000
+        });
+      }
+      return getHistory();
+    },
+    assert: (res) => {
+      // 8 items, bản ghi mới nhất (kwh = 500) nằm ở index 0
+      return Array.isArray(res) &&
+             res.length === 8 &&
+             res[0].kwh === 500 &&
+             res[7].kwh === 150;
+    }
+  },
+  {
+    id: 'TC_HIST_05',
+    category: TEST_CATEGORIES.STORAGE,
+    name: 'Xóa từng bản ghi lịch sử theo ID',
+    description: 'Hàm removeHistoryItem(id) loại bỏ chính xác bản ghi mong muốn.',
+    runner: () => {
+      clearAllHistory();
+      saveHistoryItem({ calculationType: 'direct', kwh: 100, totalAmount: 200000 });
+      saveHistoryItem({ calculationType: 'direct', kwh: 200, totalAmount: 400000 });
+      const current = getHistory();
+      const targetId = current[0].id;
+      const afterRemoval = removeHistoryItem(targetId);
+      return { current, targetId, afterRemoval };
+    },
+    assert: ({ current, targetId, afterRemoval }) => {
+      return current.length === 2 &&
+             afterRemoval.length === 1 &&
+             afterRemoval.every(item => item.id !== targetId);
+    }
+  },
+  {
+    id: 'TC_HIST_06',
+    category: TEST_CATEGORIES.STORAGE,
+    name: 'Xóa toàn bộ lịch sử tính toán',
+    description: 'Hàm clearAllHistory() dọn sạch toàn bộ danh sách.',
+    runner: () => {
+      saveHistoryItem({ calculationType: 'direct', kwh: 100, totalAmount: 200000 });
+      const cleared = clearAllHistory();
+      const remaining = getHistory();
+      return { cleared, remaining };
+    },
+    assert: ({ cleared, remaining }) => cleared === true && remaining.length === 0
   }
 ];
 
@@ -288,11 +551,20 @@ export function runAllTests() {
     let errorMessage = null;
 
     try {
-      actualResult = calculateElectricityBill(
-        tc.input.oldIdx,
-        tc.input.newIdx,
-        tc.input.vatRate !== undefined ? tc.input.vatRate : 0.08
-      );
+      if (typeof tc.runner === 'function') {
+        actualResult = tc.runner();
+      } else if (tc.input && tc.input.kwh !== undefined && tc.input.oldIdx === undefined) {
+        actualResult = calculateDirectKwh(
+          tc.input.kwh,
+          tc.input.vatRate !== undefined ? tc.input.vatRate : 0.08
+        );
+      } else {
+        actualResult = calculateElectricityBill(
+          tc.input.oldIdx,
+          tc.input.newIdx,
+          tc.input.vatRate !== undefined ? tc.input.vatRate : 0.08
+        );
+      }
       passed = Boolean(tc.assert(actualResult));
     } catch (err) {
       passed = false;
