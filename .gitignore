@@ -1,17 +1,40 @@
+# Dependencies
 node_modules/
+
+# OS & IDE Cache
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
 *.log
 
-# Documents & Spreadsheets
+# Tài liệu văn phòng & Bảng tính (Word, Excel, PDF, PowerPoint...)
 *.docx
-*.xlsx
 *.doc
+*.xlsx
 *.xls
+*.csv
+*.pptx
+*.ppt
+*.pdf
 ~$*
 
-# Agents
+# File báo cáo & tài liệu học thuật không nộp lên Git
+*BAO_CAO*
+*Bao_Cao*
+*bao_cao*
+*SLIDE*
+*Slide*
+*slide*
+*SRS*
+*srs*
+*Test_Plan*
+*test_plan*
+*Test_Case*
+*test_case*
+BAO_CAO_KIEM_DINH_CLPM.md
+
+# AI Agents & Cấu hình môi trường
 .agents/
 .agent/
+.gemini/
